@@ -59,6 +59,8 @@ When files are synchronized, the command exits with code `0`.
 
 When drift is found, it exits with code `1` and reports missing, extra, or reordered headings.
 
+Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, and `reports`; drifting reports include the target path and structured heading differences.
+
 ## CI
 
 Use this GitHub Actions job as a documentation quality gate:
@@ -102,7 +104,6 @@ The project was built with a strict TDD workflow: failing tests first, minimal i
 
 ## Roadmap
 
-- Add richer JSON output for CI integrations.
 - Support optional fail-fast mode.
 - Add more diagnostics for duplicate headings.
 - Publish signed package releases.

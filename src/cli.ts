@@ -3,7 +3,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { compareHeadings, formatComparisonReport } from "./compare.ts";
+import { compareHeadings, formatComparisonReport, type ComparisonResult } from "./compare.ts";
 import { loadConfig } from "./config.ts";
 import { filterIgnoredHeadings, parseHeadings } from "./markdown.ts";
 
@@ -12,16 +12,37 @@ async function readHeadings(cwd: string, path: string, ignoredTexts: string[]) {
   return filterIgnoredHeadings(parseHeadings(content), ignoredTexts);
 }
 
+function formatJsonReport(source: string, targets: string[], results: ComparisonResult[]) {
+  return {
+    ok: results.length === 0,
+    source,
+    targets,
+    reports: results.map((result) => ({
+      target: result.targetPath,
+      differences: result.differences.map(({ type, source, target }) => ({
+        type,
+        ...(source ? { source } : {}),
+        ...(target ? { target } : {}),
+      })),
+    })),
+  };
+}
+
 export async function run(argv: string[] = process.argv.slice(2), cwd: string = process.cwd()): Promise<number> {
   const command = argv[0] ?? "check";
-  if (command !== "check") {
-    console.error("Usage: readme-echo check");
+  const options = argv.slice(1);
+  const json = options.includes("--json");
+  const hasUnknownOption = options.some((option) => option !== "--json");
+
+  if (command !== "check" || hasUnknownOption) {
+    console.error("Usage: readme-echo check [--json]");
     return 1;
   }
 
   const config = await loadConfig(cwd);
   const sourceHeadings = await readHeadings(cwd, config.source, config.ignoreHeadings);
   const reports: string[] = [];
+  const comparisonResults: ComparisonResult[] = [];
   let hasDrift = false;
 
   for (const target of config.targets) {
@@ -33,7 +54,13 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
     if (!result.ok) {
       hasDrift = true;
       reports.push(formatComparisonReport(result));
+      comparisonResults.push(result);
     }
+  }
+
+  if (json) {
+    console.log(JSON.stringify(formatJsonReport(config.source, config.targets, comparisonResults)));
+    return hasDrift ? 1 : 0;
   }
 
   if (hasDrift) {

@@ -6,7 +6,7 @@ import test from "node:test";
 
 import { run } from "../src/cli.ts";
 
-async function runCli(cwd: string): Promise<{ code: number; stdout: string; stderr: string }> {
+async function runCli(cwd: string, argv: string[] = ["check"]): Promise<{ code: number; stdout: string; stderr: string }> {
   const originalLog = console.log;
   const originalError = console.error;
   let stdout = "";
@@ -20,13 +20,80 @@ async function runCli(cwd: string): Promise<{ code: number; stdout: string; stde
   };
 
   try {
-    const code = await run(["check"], cwd);
+    const code = await run(argv, cwd);
     return { code, stdout, stderr };
   } finally {
     console.log = originalLog;
     console.error = originalError;
   }
 }
+
+test("CLI prints JSON success report with --json", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-json-pass-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--json"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.deepEqual(JSON.parse(result.stdout), {
+    ok: true,
+    source: "README.md",
+    targets: ["README-jp.md", "README-zh.md"],
+    reports: [],
+  });
+});
+
+test("CLI prints JSON drift report with --json", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-json-fail-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--json"]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    source: string;
+    targets: string[];
+    reports: Array<{
+      target: string;
+      differences: Array<{
+        type: string;
+        source?: { level: number; text: string; line: number };
+        target?: { level: number; text: string; line: number };
+      }>;
+    }>;
+  };
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, false);
+  assert.equal(payload.source, "README.md");
+  assert.deepEqual(payload.targets, ["README-jp.md", "README-zh.md"]);
+  assert.equal(payload.reports.length, 1);
+  assert.equal(payload.reports[0].target, "README-zh.md");
+  assert.deepEqual(payload.reports[0].differences, [
+    {
+      type: "missing",
+      source: { level: 2, text: "Usage", line: 5 },
+    },
+  ]);
+});
+
+test("CLI keeps usage errors human-readable when --json is present", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-json-usage-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+
+  const result = await runCli(cwd, ["check", "--json", "--unknown"]);
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\]/);
+});
 
 test("CLI exits 1 and prints drift when mismatch exists", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-fail-${Date.now()}`);
