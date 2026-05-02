@@ -41,6 +41,49 @@ test("CLI stays silent for synchronized READMEs with --quiet", async () => {
   assert.equal(result.stderr, "");
 });
 
+test("CLI prints text summary with --summary", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-summary-pass-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--summary"]);
+
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /All README files are synchronized\./);
+  assert.match(result.stdout, /Checked 2 target README file\(s\): 0 drift report\(s\)\./);
+  assert.equal(result.stderr, "");
+});
+
+test("CLI quiet summary is suppressed on success", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-summary-quiet-pass-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--quiet", "--summary"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
+});
+
+test("CLI quiet summary is printed on failure", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-summary-quiet-fail-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
+
+  const result = await runCli(cwd, ["check", "--quiet", "--summary"]);
+
+  assert.equal(result.code, 1);
+  assert.match(result.stdout, /README-zh\.md/);
+  assert.match(result.stdout, /Missing/);
+  assert.match(result.stdout, /Checked 1 target README file\(s\): 1 drift report\(s\)\./);
+  assert.equal(result.stderr, "");
+});
+
 test("CLI prints JSON success report with --json", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-json-pass-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
@@ -56,8 +99,39 @@ test("CLI prints JSON success report with --json", async () => {
     ok: true,
     source: "README.md",
     targets: ["README-jp.md", "README-zh.md"],
+    summary: {
+      checkedTargets: 2,
+      driftReports: 0,
+    },
     reports: [],
   });
+});
+
+test("CLI prints JSON summary object with --json and --summary", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-json-summary-fail-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--json", "--summary"]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    summary: {
+      checkedTargets: number;
+      driftReports: number;
+    };
+    reports: Array<{ target: string }>;
+  };
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, false);
+  assert.deepEqual(payload.summary, {
+    checkedTargets: 2,
+    driftReports: 1,
+  });
+  assert.deepEqual(payload.reports.map((report) => report.target), ["README-zh.md"]);
 });
 
 test("CLI prints JSON drift report with --json", async () => {
@@ -193,7 +267,7 @@ test("CLI keeps usage errors human-readable when --json is present", async () =>
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--quiet\] \[--summary\] \[--fail-fast\]/);
 });
 
 test("CLI exits 1 and prints drift when mismatch exists", async () => {

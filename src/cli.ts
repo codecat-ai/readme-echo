@@ -12,11 +12,19 @@ async function readHeadings(cwd: string, path: string, ignoredTexts: string[]) {
   return filterIgnoredHeadings(parseHeadings(content), ignoredTexts);
 }
 
+function formatSummary(checkedTargets: number, driftReports: number): string {
+  return `Checked ${checkedTargets} target README file(s): ${driftReports} drift report(s).`;
+}
+
 function formatJsonReport(source: string, targets: string[], results: ComparisonResult[]) {
   return {
     ok: results.length === 0,
     source,
     targets,
+    summary: {
+      checkedTargets: targets.length,
+      driftReports: results.length,
+    },
     reports: results.map((result) => ({
       target: result.targetPath,
       differences: result.differences.map(({ type, source, target }) => ({
@@ -33,11 +41,14 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const options = argv.slice(1);
   const json = options.includes("--json");
   const quiet = options.includes("--quiet");
+  const summary = options.includes("--summary");
   const cliFailFast = options.includes("--fail-fast");
-  const hasUnknownOption = options.some((option) => option !== "--json" && option !== "--quiet" && option !== "--fail-fast");
+  const hasUnknownOption = options.some((option) => (
+    option !== "--json" && option !== "--quiet" && option !== "--summary" && option !== "--fail-fast"
+  ));
 
   if (command !== "check" || hasUnknownOption) {
-    console.error("Usage: readme-echo check [--json] [--quiet] [--fail-fast]");
+    console.error("Usage: readme-echo check [--json] [--quiet] [--summary] [--fail-fast]");
     return 1;
   }
 
@@ -73,12 +84,17 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   }
 
   if (hasDrift) {
-    console.log(reports.join("\n\n"));
+    const textReport = reports.join("\n\n");
+    const summaryReport = formatSummary(checkedTargets.length, comparisonResults.length);
+    console.log(summary ? `${textReport}\n\n${summaryReport}` : textReport);
     return 1;
   }
 
   if (!quiet) {
     console.log("All README files are synchronized.");
+    if (summary) {
+      console.log(formatSummary(checkedTargets.length, comparisonResults.length));
+    }
   }
   return 0;
 }
