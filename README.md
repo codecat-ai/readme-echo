@@ -69,6 +69,8 @@ Use `readme-echo check --json` for machine-readable output. It prints a JSON obj
 
 Use `readme-echo list-targets` to print one target README path per line without running heading comparisons. Use `readme-echo list-targets --json` to print the configured `source` and `targets` as JSON.
 
+Use `readme-echo check --target README-zh.md` to check only one configured or discovered target. Repeat `--target` to check multiple specific README files.
+
 Use `readme-echo check --quiet` to suppress output when files are synchronized. Drift reports are still printed. When combined with `--summary`, the summary is suppressed on success and printed on failure.
 
 Use `readme-echo check --fail-fast` to stop at the first drifting target. This flag enables fail-fast even when `failFast` is omitted or set to `false` in config. Text output prints only the first drift report when fail-fast stops early.
