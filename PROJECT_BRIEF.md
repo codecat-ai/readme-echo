@@ -45,9 +45,11 @@ When the English README changes, translated README files often miss new sections
    - `targets`: string array
    - `ignoreHeadings`: string array of exact heading texts to ignore
    - `allowLocalizedTitles`: boolean
+   - `failFast`: boolean
 8. If `allowLocalizedTitles` is true, compare only heading levels and count/order, not literal title text.
-9. Exit code 0 when all targets pass; exit code 1 when drift is found.
-10. Provide a GitHub Actions example in README.
+9. If fail-fast is enabled, stop checking targets after the first drift.
+10. Exit code 0 when all targets pass; exit code 1 when drift is found.
+11. Provide a GitHub Actions example in README.
 
 ## Suggested stack
 
@@ -95,6 +97,7 @@ Meaningful test cases:
 - detects reordered headings
 - supports localized-title mode by comparing levels/order only
 - loads config with sane defaults
+- supports optional fail-fast behavior
 - CLI exits 1 and prints drift when mismatch exists
 - CLI exits 0 when source and targets are structurally aligned
 

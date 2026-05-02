@@ -20,6 +20,7 @@ test("loads config with sane defaults and discovers README-* targets", async () 
   assert.deepEqual(config.targets, ["README-jp.md", "README-zh.md"]);
   assert.deepEqual(config.ignoreHeadings, []);
   assert.equal(config.allowLocalizedTitles, false);
+  assert.equal(config.failFast, false);
 });
 
 test("loads explicit .readme-echo.json values", async () => {
@@ -30,6 +31,7 @@ test("loads explicit .readme-echo.json values", async () => {
     targets: ["docs/README-zh.md"],
     ignoreHeadings: ["Changelog"],
     allowLocalizedTitles: true,
+    failFast: true,
   }));
 
   const config = await loadConfig(cwd);
@@ -39,5 +41,18 @@ test("loads explicit .readme-echo.json values", async () => {
     targets: ["docs/README-zh.md"],
     ignoreHeadings: ["Changelog"],
     allowLocalizedTitles: true,
+    failFast: true,
   });
+});
+
+test("loads explicit false failFast value", async () => {
+  const cwd = join(tmpdir(), `readme-echo-fail-fast-false-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    failFast: false,
+  }));
+
+  const config = await loadConfig(cwd);
+
+  assert.equal(config.failFast, false);
 });

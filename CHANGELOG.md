@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+- Added optional fail-fast checks through `--fail-fast` and the `failFast` config field.
+- Updated JSON output so fail-fast reports include only checked targets when checking stops early.
+
 ## 0.1.0
 
 - Initial MIT-licensed Readme Echo CLI.

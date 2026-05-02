@@ -42,7 +42,8 @@ Add `.readme-echo.json` at the repository root when defaults are not enough:
   "source": "README.md",
   "targets": ["README-zh.md", "README-jp.md"],
   "ignoreHeadings": ["Changelog"],
-  "allowLocalizedTitles": true
+  "allowLocalizedTitles": true,
+  "failFast": false
 }
 ```
 
@@ -52,6 +53,7 @@ Options:
 - `targets`: localized README paths.
 - `ignoreHeadings`: exact heading texts to ignore.
 - `allowLocalizedTitles`: compare heading levels and order without requiring translated titles to match the English text.
+- `failFast`: stop after the first drifting target instead of checking every target.
 
 ## CLI Output
 
@@ -59,9 +61,11 @@ When files are synchronized, the command exits with code `0`.
 
 When drift is found, it exits with code `1` and reports missing, extra, or reordered headings.
 
-Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, and `reports`; drifting reports include the target path and structured heading differences.
+Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, and `reports`; drifting reports include the target path and structured heading differences. When fail-fast stops early, `targets` and `reports` include only the targets that were checked.
 
 Use `readme-echo check --quiet` to suppress output when files are synchronized. Drift reports are still printed.
+
+Use `readme-echo check --fail-fast` to stop at the first drifting target. This flag enables fail-fast even when `failFast` is omitted or set to `false` in config. Text output prints only the first drift report when fail-fast stops early.
 
 ## CI
 
@@ -106,8 +110,8 @@ The project was built with a strict TDD workflow: failing tests first, minimal i
 
 ## Roadmap
 
-- Support optional fail-fast mode.
 - Add more diagnostics for duplicate headings.
+- Add per-target timing in JSON output.
 - Publish signed package releases.
 
 ## Contributing

@@ -42,7 +42,8 @@ readme-echo check
   "source": "README.md",
   "targets": ["README-zh.md", "README-jp.md"],
   "ignoreHeadings": ["Changelog"],
-  "allowLocalizedTitles": true
+  "allowLocalizedTitles": true,
+  "failFast": false
 }
 ```
 
@@ -52,6 +53,7 @@ readme-echo check
 - `targets`: ローカライズされた README のパス。
 - `ignoreHeadings`: 無視する見出しテキストの完全一致。
 - `allowLocalizedTitles`: 翻訳後の見出しを英語テキストと一致させず、見出しレベルと順序だけを比較します。
+- `failFast`: すべてのターゲットを確認せず、最初に差分があるターゲットで停止します。
 
 ## CLI 出力
 
@@ -59,9 +61,11 @@ readme-echo check
 
 差分が見つかった場合、終了コード `1` で終了し、欠落、余分、または順序変更された見出しを報告します。
 
-`readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`reports` を含む JSON オブジェクトを出力し、差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。
+`readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`reports` を含む JSON オブジェクトを出力し、差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。fail-fast が途中で停止した場合、`targets` と `reports` には確認済みのターゲットだけが含まれます。
 
 `readme-echo check --quiet` を使うと、ファイルが同期している場合の出力を抑制できます。差分レポートは引き続き出力されます。
+
+`readme-echo check --fail-fast` を使うと、最初に差分があるターゲットで停止します。このフラグは、設定で `failFast` が省略されている場合や `false` の場合でも fail-fast を有効にします。fail-fast が途中で停止した場合、テキスト出力には最初の差分レポートだけが表示されます。
 
 ## CI
 
@@ -106,8 +110,8 @@ npm test
 
 ## ロードマップ
 
-- 任意の fail-fast モードをサポートする。
 - 重複見出しに対する診断を増やす。
+- JSON 出力にターゲットごとの所要時間を追加する。
 - 署名付きパッケージリリースを公開する。
 
 ## コントリビュート
