@@ -28,6 +28,19 @@ async function runCli(cwd: string, argv: string[] = ["check"]): Promise<{ code: 
   }
 }
 
+test("CLI stays silent for synchronized READMEs with --quiet", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-quiet-pass-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--quiet"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
+});
+
 test("CLI prints JSON success report with --json", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-json-pass-${Date.now()}`);
   await mkdir(cwd, { recursive: true });

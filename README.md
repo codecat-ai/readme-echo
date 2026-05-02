@@ -61,6 +61,8 @@ When drift is found, it exits with code `1` and reports missing, extra, or reord
 
 Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, and `reports`; drifting reports include the target path and structured heading differences.
 
+Use `readme-echo check --quiet` to suppress output when files are synchronized. Drift reports are still printed.
+
 ## CI
 
 Use this GitHub Actions job as a documentation quality gate:

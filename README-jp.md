@@ -61,6 +61,8 @@ readme-echo check
 
 `readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`reports` を含む JSON オブジェクトを出力し、差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。
 
+`readme-echo check --quiet` を使うと、ファイルが同期している場合の出力を抑制できます。差分レポートは引き続き出力されます。
+
 ## CI
 
 この GitHub Actions ジョブをドキュメント品質ゲートとして利用できます。

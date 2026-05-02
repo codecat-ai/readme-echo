@@ -61,6 +61,8 @@ readme-echo check
 
 使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets` 和 `reports` 的 JSON 对象；存在漂移的报告会包含目标路径和结构化标题差异。
 
+使用 `readme-echo check --quiet` 可在文件保持同步时禁止输出。漂移报告仍会打印。
+
 ## CI
 
 可以使用这个 GitHub Actions 任务作为文档质量门禁：

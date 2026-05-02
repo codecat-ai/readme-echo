@@ -32,10 +32,11 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const command = argv[0] ?? "check";
   const options = argv.slice(1);
   const json = options.includes("--json");
-  const hasUnknownOption = options.some((option) => option !== "--json");
+  const quiet = options.includes("--quiet");
+  const hasUnknownOption = options.some((option) => option !== "--json" && option !== "--quiet");
 
   if (command !== "check" || hasUnknownOption) {
-    console.error("Usage: readme-echo check [--json]");
+    console.error("Usage: readme-echo check [--json] [--quiet]");
     return 1;
   }
 
@@ -68,7 +69,9 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
     return 1;
   }
 
-  console.log("All README files are synchronized.");
+  if (!quiet) {
+    console.log("All README files are synchronized.");
+  }
   return 0;
 }
 
