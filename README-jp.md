@@ -61,9 +61,11 @@ readme-echo check
 
 差分が見つかった場合、終了コード `1` で終了し、欠落、余分、または順序変更された見出しを報告します。
 
-`readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`reports` を含む JSON オブジェクトを出力し、差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。fail-fast が途中で停止した場合、`targets` と `reports` には確認済みのターゲットだけが含まれます。
+`readme-echo check --summary` を使うと、`Checked 2 target README file(s): 1 drift report(s).` のような簡潔な最終サマリー行を出力できます。
 
-`readme-echo check --quiet` を使うと、ファイルが同期している場合の出力を抑制できます。差分レポートは引き続き出力されます。
+`readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`summary`、`reports` を含む JSON オブジェクトを出力し、`summary` には `checkedTargets` と `driftReports` が含まれます。差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。fail-fast が途中で停止した場合、`targets`、`summary`、`reports` には確認済みのターゲットだけが反映されます。
+
+`readme-echo check --quiet` を使うと、ファイルが同期している場合の出力を抑制できます。差分レポートは引き続き出力されます。`--summary` と組み合わせると、成功時はサマリーを抑制し、失敗時はサマリーを出力します。
 
 `readme-echo check --fail-fast` を使うと、最初に差分があるターゲットで停止します。このフラグは、設定で `failFast` が省略されている場合や `false` の場合でも fail-fast を有効にします。fail-fast が途中で停止した場合、テキスト出力には最初の差分レポートだけが表示されます。
 

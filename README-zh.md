@@ -61,9 +61,11 @@ readme-echo check
 
 当发现漂移时，命令以退出码 `1` 结束，并报告缺失、多余或顺序变化的标题。
 
-使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets` 和 `reports` 的 JSON 对象；存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets` 和 `reports` 只包含已经检查过的目标。
+使用 `readme-echo check --summary` 可打印简洁的最终摘要行，例如 `Checked 2 target README file(s): 1 drift report(s).`
 
-使用 `readme-echo check --quiet` 可在文件保持同步时禁止输出。漂移报告仍会打印。
+使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets`、`summary` 和 `reports` 的 JSON 对象；`summary` 包含 `checkedTargets` 和 `driftReports`。存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets`、`summary` 和 `reports` 只反映已经检查过的目标。
+
+使用 `readme-echo check --quiet` 可在文件保持同步时禁止输出。漂移报告仍会打印。与 `--summary` 一起使用时，成功时会隐藏摘要，失败时会打印摘要。
 
 使用 `readme-echo check --fail-fast` 可在第一个发生漂移的目标处停止。即使配置中省略 `failFast` 或将其设为 `false`，该标志也会启用 fail-fast。fail-fast 提前停止时，文本输出只打印第一个漂移报告。
 
