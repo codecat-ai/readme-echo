@@ -110,10 +110,28 @@ test("CLI list-targets prints JSON source and targets", async () => {
 
   assert.equal(result.code, 0);
   assert.equal(result.stderr, "");
+  assert.equal(result.stdout, "{\"source\":\"README.md\",\"targets\":[\"README-jp.md\",\"README-zh.md\"]}\n");
   assert.deepEqual(JSON.parse(result.stdout), {
     source: "README.md",
     targets: ["README-jp.md", "README-zh.md"],
   });
+});
+
+test("CLI list-targets prints pretty JSON with --json --pretty", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-list-targets-json-pretty-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n");
+
+  const result = await runCli(cwd, ["list-targets", "--json", "--pretty"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(result.stdout, `${JSON.stringify({
+    source: "README.md",
+    targets: ["README-jp.md", "README-zh.md"],
+  }, null, 2)}\n`);
 });
 
 test("CLI list-targets respects configured source and targets", async () => {
@@ -147,6 +165,17 @@ test("CLI list-targets rejects unknown options with usage", async () => {
   assert.match(result.stderr, /Usage: readme-echo list-targets \[--json\]/);
 });
 
+test("CLI list-targets rejects --pretty without --json", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-list-targets-pretty-usage-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+
+  const result = await runCli(cwd, ["list-targets", "--pretty"]);
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Usage: readme-echo list-targets \[--json\] \[--pretty\]/);
+});
+
 test("CLI check --target limits comparisons to the requested target README", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-target-option-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
@@ -175,7 +204,7 @@ test("CLI prints JSON success report with --json", async () => {
 
   assert.equal(result.code, 0);
   assert.equal(result.stderr, "");
-  assert.deepEqual(JSON.parse(result.stdout), {
+  const expected = {
     ok: true,
     source: "README.md",
     targets: ["README-jp.md", "README-zh.md"],
@@ -184,7 +213,33 @@ test("CLI prints JSON success report with --json", async () => {
       driftReports: 0,
     },
     reports: [],
-  });
+  };
+  assert.equal(result.stdout, `${JSON.stringify(expected)}\n`);
+  assert.deepEqual(JSON.parse(result.stdout), expected);
+});
+
+test("CLI prints pretty JSON success report with --json --pretty", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-json-pretty-pass-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--json", "--pretty"]);
+  const expected = {
+    ok: true,
+    source: "README.md",
+    targets: ["README-jp.md", "README-zh.md"],
+    summary: {
+      checkedTargets: 2,
+      driftReports: 0,
+    },
+    reports: [],
+  };
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(result.stdout, `${JSON.stringify(expected, null, 2)}\n`);
 });
 
 test("CLI prints JSON summary object with --json and --summary", async () => {
@@ -347,7 +402,18 @@ test("CLI keeps usage errors human-readable when --json is present", async () =>
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--quiet\] \[--summary\] \[--fail-fast\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\]/);
+});
+
+test("CLI check rejects --pretty without --json", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-pretty-usage-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+
+  const result = await runCli(cwd, ["check", "--pretty"]);
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\]/);
 });
 
 test("CLI exits 1 and prints drift when mismatch exists", async () => {
