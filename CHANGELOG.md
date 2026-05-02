@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Added `readme-echo list-targets` with text and JSON output for inspecting configured README targets before checks.
 - Added `readme-echo check --summary` for concise checked-target and drift-report totals in text output.
 - Added JSON `summary.checkedTargets` and `summary.driftReports` fields to `readme-echo check --json` output.
 - Added optional fail-fast checks through `--fail-fast` and the `failFast` config field.

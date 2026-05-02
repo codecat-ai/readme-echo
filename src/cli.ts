@@ -40,6 +40,30 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const command = argv[0] ?? "check";
   const options = argv.slice(1);
   const json = options.includes("--json");
+
+  if (command === "list-targets") {
+    const hasUnknownOption = options.some((option) => option !== "--json");
+
+    if (hasUnknownOption) {
+      console.error("Usage: readme-echo list-targets [--json]");
+      return 1;
+    }
+
+    const config = await loadConfig(cwd);
+    if (json) {
+      console.log(JSON.stringify({
+        source: config.source,
+        targets: config.targets,
+      }));
+      return 0;
+    }
+
+    for (const target of config.targets) {
+      console.log(target);
+    }
+    return 0;
+  }
+
   const quiet = options.includes("--quiet");
   const summary = options.includes("--summary");
   const cliFailFast = options.includes("--fail-fast");
