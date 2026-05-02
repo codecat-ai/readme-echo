@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 import { compareHeadings, formatComparisonReport, type ComparisonResult } from "./compare.ts";
 import { loadConfig } from "./config.ts";
-import { filterIgnoredHeadings, parseHeadings } from "./markdown.ts";
+import { filterIgnoredHeadings, parseHeadings, type Heading } from "./markdown.ts";
 
 async function readHeadings(cwd: string, path: string, ignoredTexts: string[]) {
   const content = await readFile(join(cwd, path), "utf8");
@@ -16,9 +16,55 @@ function formatSummary(checkedTargets: number, driftReports: number): string {
   return `Checked ${checkedTargets} target README file(s): ${driftReports} drift report(s).`;
 }
 
-function formatJsonReport(source: string, targets: string[], results: ComparisonResult[]) {
-  return {
-    ok: results.length === 0,
+type DuplicateHeading = {
+  level: number;
+  text: string;
+  count: number;
+};
+
+type DuplicateReport = {
+  path: string;
+  duplicates: DuplicateHeading[];
+};
+
+function detectDuplicateHeadings(path: string, headings: Heading[]): DuplicateReport | undefined {
+  const counts = new Map<string, DuplicateHeading>();
+
+  for (const heading of headings) {
+    const key = `${heading.level}:${heading.text}`;
+    const duplicate = counts.get(key);
+    if (duplicate) {
+      duplicate.count += 1;
+    } else {
+      counts.set(key, {
+        level: heading.level,
+        text: heading.text,
+        count: 1,
+      });
+    }
+  }
+
+  const duplicates = [...counts.values()].filter((heading) => heading.count > 1);
+  return duplicates.length > 0 ? { path, duplicates } : undefined;
+}
+
+function formatDuplicateReport(report: DuplicateReport): string {
+  return [
+    `Duplicate headings in ${report.path}:`,
+    ...report.duplicates.map((duplicate) => (
+      `- ${"#".repeat(duplicate.level)} ${duplicate.text} appears ${duplicate.count} times`
+    )),
+  ].join("\n");
+}
+
+function formatJsonReport(
+  source: string,
+  targets: string[],
+  results: ComparisonResult[],
+  duplicateReports?: DuplicateReport[],
+) {
+  const payload = {
+    ok: results.length === 0 && (!duplicateReports || duplicateReports.length === 0),
     source,
     targets,
     summary: {
@@ -34,6 +80,8 @@ function formatJsonReport(source: string, targets: string[], results: Comparison
       })),
     })),
   };
+
+  return duplicateReports ? { ...payload, duplicateReports } : payload;
 }
 
 function stringifyJson(value: unknown, pretty: boolean): string {
@@ -46,10 +94,11 @@ type CheckOptions = {
   quiet: boolean;
   summary: boolean;
   failFast: boolean;
+  duplicates: boolean;
   targets: string[];
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--target <path>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--target <path>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 
@@ -60,6 +109,7 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     quiet: false,
     summary: false,
     failFast: false,
+    duplicates: false,
     targets: [],
   };
 
@@ -76,6 +126,8 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
       parsed.summary = true;
     } else if (option === "--fail-fast") {
       parsed.failFast = true;
+    } else if (option === "--duplicates") {
+      parsed.duplicates = true;
     } else if (option === "--target") {
       const target = options[index + 1];
       if (!target || target.startsWith("--")) {
@@ -150,33 +202,57 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const checkedTargets: string[] = [];
   const reports: string[] = [];
   const comparisonResults: ComparisonResult[] = [];
+  const duplicateReports: DuplicateReport[] = [];
   let hasDrift = false;
+
+  if (checkOptions.duplicates) {
+    const sourceDuplicateReport = detectDuplicateHeadings(config.source, sourceHeadings);
+    if (sourceDuplicateReport) {
+      duplicateReports.push(sourceDuplicateReport);
+    }
+  }
 
   for (const target of targets) {
     checkedTargets.push(target);
     const targetHeadings = await readHeadings(cwd, target, config.ignoreHeadings);
+    const targetDuplicateReport = checkOptions.duplicates ? detectDuplicateHeadings(target, targetHeadings) : undefined;
     const result = compareHeadings(config.source, target, sourceHeadings, targetHeadings, {
       allowLocalizedTitles: config.allowLocalizedTitles,
     });
+
+    if (targetDuplicateReport) {
+      duplicateReports.push(targetDuplicateReport);
+    }
 
     if (!result.ok) {
       hasDrift = true;
       reports.push(formatComparisonReport(result));
       comparisonResults.push(result);
+    }
 
-      if (failFast) {
-        break;
-      }
+    if (failFast && (!result.ok || targetDuplicateReport)) {
+      break;
     }
   }
 
   if (checkOptions.json) {
-    console.log(stringifyJson(formatJsonReport(config.source, checkedTargets, comparisonResults), checkOptions.pretty));
-    return hasDrift ? 1 : 0;
+    console.log(stringifyJson(
+      formatJsonReport(
+        config.source,
+        checkedTargets,
+        comparisonResults,
+        checkOptions.duplicates ? duplicateReports : undefined,
+      ),
+      checkOptions.pretty,
+    ));
+    return hasDrift || duplicateReports.length > 0 ? 1 : 0;
   }
 
-  if (hasDrift) {
-    const textReport = reports.join("\n\n");
+  if (hasDrift || duplicateReports.length > 0) {
+    const textReport = [
+      ...reports,
+      ...duplicateReports.map((report) => formatDuplicateReport(report)),
+    ].join("\n\n");
     const summaryReport = formatSummary(checkedTargets.length, comparisonResults.length);
     console.log(checkOptions.summary ? `${textReport}\n\n${summaryReport}` : textReport);
     return 1;
