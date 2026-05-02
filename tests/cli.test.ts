@@ -147,6 +147,23 @@ test("CLI list-targets rejects unknown options with usage", async () => {
   assert.match(result.stderr, /Usage: readme-echo list-targets \[--json\]/);
 });
 
+test("CLI check --target limits comparisons to the requested target README", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-target-option-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+
+  const result = await runCli(cwd, ["check", "--target", "README-zh.md", "--json"]);
+  const payload = JSON.parse(result.stdout) as { ok: boolean; targets: string[]; reports: Array<{ target: string }> };
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, true);
+  assert.deepEqual(payload.targets, ["README-zh.md"]);
+  assert.deepEqual(payload.reports, []);
+});
+
 test("CLI prints JSON success report with --json", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-json-pass-${Date.now()}`);
   await mkdir(cwd, { recursive: true });

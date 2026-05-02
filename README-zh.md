@@ -69,6 +69,8 @@ readme-echo check
 
 使用 `readme-echo list-targets` 可在不运行标题比较的情况下逐行打印目标 README 路径。使用 `readme-echo list-targets --json` 可将配置后的 `source` 和 `targets` 打印为 JSON。
 
+使用 `readme-echo check --target README-zh.md` 可只检查一个已配置或已发现的目标。重复使用 `--target` 可检查多个指定的 README 文件。
+
 使用 `readme-echo check --quiet` 可在文件保持同步时禁止输出。漂移报告仍会打印。与 `--summary` 一起使用时，成功时会隐藏摘要，失败时会打印摘要。
 
 使用 `readme-echo check --fail-fast` 可在第一个发生漂移的目标处停止。即使配置中省略 `failFast` 或将其设为 `false`，该标志也会启用 fail-fast。fail-fast 提前停止时，文本输出只打印第一个漂移报告。

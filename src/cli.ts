@@ -36,6 +36,51 @@ function formatJsonReport(source: string, targets: string[], results: Comparison
   };
 }
 
+type CheckOptions = {
+  json: boolean;
+  quiet: boolean;
+  summary: boolean;
+  failFast: boolean;
+  targets: string[];
+};
+
+const checkUsage = "Usage: readme-echo check [--json] [--quiet] [--summary] [--fail-fast] [--target <path>]";
+
+function parseCheckOptions(options: string[]): CheckOptions | undefined {
+  const parsed: CheckOptions = {
+    json: false,
+    quiet: false,
+    summary: false,
+    failFast: false,
+    targets: [],
+  };
+
+  for (let index = 0; index < options.length; index += 1) {
+    const option = options[index];
+
+    if (option === "--json") {
+      parsed.json = true;
+    } else if (option === "--quiet") {
+      parsed.quiet = true;
+    } else if (option === "--summary") {
+      parsed.summary = true;
+    } else if (option === "--fail-fast") {
+      parsed.failFast = true;
+    } else if (option === "--target") {
+      const target = options[index + 1];
+      if (!target || target.startsWith("--")) {
+        return undefined;
+      }
+      parsed.targets.push(target);
+      index += 1;
+    } else {
+      return undefined;
+    }
+  }
+
+  return parsed;
+}
+
 export async function run(argv: string[] = process.argv.slice(2), cwd: string = process.cwd()): Promise<number> {
   const command = argv[0] ?? "check";
   const options = argv.slice(1);
@@ -64,27 +109,23 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
     return 0;
   }
 
-  const quiet = options.includes("--quiet");
-  const summary = options.includes("--summary");
-  const cliFailFast = options.includes("--fail-fast");
-  const hasUnknownOption = options.some((option) => (
-    option !== "--json" && option !== "--quiet" && option !== "--summary" && option !== "--fail-fast"
-  ));
+  const checkOptions = parseCheckOptions(options);
 
-  if (command !== "check" || hasUnknownOption) {
-    console.error("Usage: readme-echo check [--json] [--quiet] [--summary] [--fail-fast]");
+  if (command !== "check" || !checkOptions) {
+    console.error(checkUsage);
     return 1;
   }
 
   const config = await loadConfig(cwd);
-  const failFast = cliFailFast || config.failFast;
+  const failFast = checkOptions.failFast || config.failFast;
+  const targets = checkOptions.targets.length > 0 ? checkOptions.targets : config.targets;
   const sourceHeadings = await readHeadings(cwd, config.source, config.ignoreHeadings);
   const checkedTargets: string[] = [];
   const reports: string[] = [];
   const comparisonResults: ComparisonResult[] = [];
   let hasDrift = false;
 
-  for (const target of config.targets) {
+  for (const target of targets) {
     checkedTargets.push(target);
     const targetHeadings = await readHeadings(cwd, target, config.ignoreHeadings);
     const result = compareHeadings(config.source, target, sourceHeadings, targetHeadings, {
@@ -102,7 +143,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
     }
   }
 
-  if (json) {
+  if (checkOptions.json) {
     console.log(JSON.stringify(formatJsonReport(config.source, checkedTargets, comparisonResults)));
     return hasDrift ? 1 : 0;
   }
@@ -110,13 +151,13 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   if (hasDrift) {
     const textReport = reports.join("\n\n");
     const summaryReport = formatSummary(checkedTargets.length, comparisonResults.length);
-    console.log(summary ? `${textReport}\n\n${summaryReport}` : textReport);
+    console.log(checkOptions.summary ? `${textReport}\n\n${summaryReport}` : textReport);
     return 1;
   }
 
-  if (!quiet) {
+  if (!checkOptions.quiet) {
     console.log("All README files are synchronized.");
-    if (summary) {
+    if (checkOptions.summary) {
       console.log(formatSummary(checkedTargets.length, comparisonResults.length));
     }
   }

@@ -69,6 +69,8 @@ readme-echo check
 
 `readme-echo list-targets` を使うと、見出し比較を実行せずにターゲット README のパスを 1 行ずつ出力できます。`readme-echo list-targets --json` を使うと、設定後の `source` と `targets` を JSON として出力できます。
 
+`readme-echo check --target README-zh.md` を使うと、設定済みまたは検出済みのターゲットを 1 つだけ確認できます。`--target` を繰り返すと、複数の特定 README ファイルを確認できます。
+
 `readme-echo check --quiet` を使うと、ファイルが同期している場合の出力を抑制できます。差分レポートは引き続き出力されます。`--summary` と組み合わせると、成功時はサマリーを抑制し、失敗時はサマリーを出力します。
 
 `readme-echo check --fail-fast` を使うと、最初に差分があるターゲットで停止します。このフラグは、設定で `failFast` が省略されている場合や `false` の場合でも fail-fast を有効にします。fail-fast が途中で停止した場合、テキスト出力には最初の差分レポートだけが表示されます。
