@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Added `readme-echo show-config` for printing the effective configuration after defaults, discovery, and config-file overrides.
 - Added `readme-echo list-targets` with text and JSON output for inspecting configured README targets before checks.
 - Added `--pretty` for two-space formatted JSON output on `readme-echo check --json` and `readme-echo list-targets --json`.
 - Added `readme-echo check --summary` for concise checked-target and drift-report totals in text output.

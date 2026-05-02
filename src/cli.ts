@@ -51,6 +51,7 @@ type CheckOptions = {
 
 const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--target <path>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
+const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 
 function parseCheckOptions(options: string[]): CheckOptions | undefined {
   const parsed: CheckOptions = {
@@ -120,6 +121,18 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
     for (const target of config.targets) {
       console.log(target);
     }
+    return 0;
+  }
+
+  if (command === "show-config") {
+    const hasUnknownOption = options.some((option) => option !== "--json" && option !== "--pretty");
+
+    if (hasUnknownOption) {
+      console.error(showConfigUsage);
+      return 1;
+    }
+
+    console.log(stringifyJson(await loadConfig(cwd), true));
     return 0;
   }
 

@@ -33,7 +33,7 @@ readme-echo check
 
 デフォルトでは、Readme Echo は `README.md` をソースとして使い、`README-*.md` に一致するすべてのトップレベルファイルをチェックします。
 
-チェック前に比較対象になるローカライズ README を確認したい場合は、`readme-echo list-targets` を使います。
+チェック前に比較対象になるローカライズ README を確認したい場合は、`readme-echo list-targets` を使います。比較を実行せずに有効な設定全体を確認したい場合は、`readme-echo show-config` を使います。
 
 ## 設定
 
@@ -67,9 +67,11 @@ readme-echo check
 
 `readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`summary`、`reports` を含む JSON オブジェクトを出力し、`summary` には `checkedTargets` と `driftReports` が含まれます。差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。fail-fast が途中で停止した場合、`targets`、`summary`、`reports` には確認済みのターゲットだけが反映されます。
 
-`--pretty` を `--json` と一緒に使うと、JSON 出力を 2 スペースのインデントで整形できます。たとえば `readme-echo check --json --pretty` や `readme-echo list-targets --json --pretty` です。`--pretty` を使わない場合、JSON 出力はコンパクトなままです。
+`check` と `list-targets` では、`--pretty` を `--json` と一緒に使うと、JSON 出力を 2 スペースのインデントで整形できます。たとえば `readme-echo check --json --pretty` や `readme-echo list-targets --json --pretty` です。`--pretty` を使わない場合、これらの JSON 出力はコンパクトなままです。
 
 `readme-echo list-targets` を使うと、見出し比較を実行せずにターゲット README のパスを 1 行ずつ出力できます。`readme-echo list-targets --json` を使うと、設定後の `source` と `targets` を JSON として出力できます。
+
+`readme-echo show-config` を使うと、デフォルト、ターゲット検出、`.readme-echo.json` の上書きが適用された有効な設定を出力できます。`source`、`targets`、`ignoreHeadings`、`allowLocalizedTitles`、`failFast` を整形済み JSON として出力します。コマンドの対称性のため `--json` と `--pretty` も受け付け、同じ整形済み出力になります。
 
 `readme-echo check --target README-zh.md` を使うと、設定済みまたは検出済みのターゲットを 1 つだけ確認できます。`--target` を繰り返すと、複数の特定 README ファイルを確認できます。
 
