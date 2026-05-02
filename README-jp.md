@@ -1,0 +1,116 @@
+# Readme Echo
+
+Readme Echo は、ローカライズされた README がメインの英語 README と同じ見出し構造を保っているか確認する小さな CLI です。
+
+翻訳サービス、外部 AI 呼び出し、README 内容の実行なしで、決定的で CI に組み込みやすいドキュメントチェックを必要とするメンテナー向けです。このプロジェクトは AI の支援を受けて保守されており、テストとリポジトリ内のプロジェクトファイルは英語を基準にしています。
+
+## インストール
+
+公開後は `npx` で利用できます。
+
+```sh
+npx readme-echo check
+```
+
+このリポジトリでローカル開発する場合:
+
+```sh
+npm test
+node src/cli.ts check
+```
+
+Node.js 22.18 以降が必要です。
+
+## クイックスタート
+
+メインの `README.md` と、`README-zh.md` や `README-jp.md` のようなトップレベルのローカライズファイルを 1 つ以上作成します。
+
+実行します。
+
+```sh
+readme-echo check
+```
+
+デフォルトでは、Readme Echo は `README.md` をソースとして使い、`README-*.md` に一致するすべてのトップレベルファイルをチェックします。
+
+## 設定
+
+デフォルトで足りない場合は、リポジトリルートに `.readme-echo.json` を追加します。
+
+```json
+{
+  "source": "README.md",
+  "targets": ["README-zh.md", "README-jp.md"],
+  "ignoreHeadings": ["Changelog"],
+  "allowLocalizedTitles": true
+}
+```
+
+オプション:
+
+- `source`: ソース README のパス。
+- `targets`: ローカライズされた README のパス。
+- `ignoreHeadings`: 無視する見出しテキストの完全一致。
+- `allowLocalizedTitles`: 翻訳後の見出しを英語テキストと一致させず、見出しレベルと順序だけを比較します。
+
+## CLI 出力
+
+ファイルが同期している場合、コマンドは終了コード `0` で終了します。
+
+差分が見つかった場合、終了コード `1` で終了し、欠落、余分、または順序変更された見出しを報告します。
+
+## CI
+
+この GitHub Actions ジョブをドキュメント品質ゲートとして利用できます。
+
+```yaml
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm test
+      - run: node src/cli.ts check
+```
+
+## 開発
+
+このプロジェクトは TypeScript ソースファイルと Node の組み込みテストランナーを使います。
+
+```sh
+npm test
+```
+
+実装は意図的に依存を少なくし、Markdown の内容やコードブロックを実行しません。
+
+## テスト
+
+テストは Markdown 見出しの解析、フェンス付きコードブロックの扱い、比較処理、設定読み込み、CLI 結果をカバーします。
+
+このプロジェクトは厳格な TDD ワークフローで構築されました。失敗するテストを先に書き、最小実装を行い、対象テストとフルスイートを実行してから整理しています。
+
+## ロードマップ
+
+- CI 連携向けにより豊富な JSON 出力を追加する。
+- 任意の fail-fast モードをサポートする。
+- 重複見出しに対する診断を増やす。
+- 署名付きパッケージリリースを公開する。
+
+## コントリビュート
+
+コントリビューションを歓迎します。[CONTRIBUTING.md](CONTRIBUTING.md) を読み、コミットメッセージは英語の Conventional Commits を使ってください。
+
+## ライセンス
+
+Readme Echo は [MIT License](LICENSE) の下で公開されています。

@@ -1,0 +1,25 @@
+{
+  "name": "readme-echo",
+  "version": "0.1.0",
+  "description": "Check whether multilingual README files stay structurally synchronized.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "readme-echo": "./src/cli.ts"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "README-zh.md",
+    "README-jp.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.ts",
+    "test:ci": "npm test",
+    "check": "node --test tests/*.test.ts"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}
