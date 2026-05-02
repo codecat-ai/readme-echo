@@ -33,7 +33,7 @@ readme-echo check
 
 默认情况下，Readme Echo 使用 `README.md` 作为源文件，并检查所有匹配 `README-*.md` 的顶层文件。
 
-如果想在检查前确认会比较哪些本地化 README 文件，可以使用 `readme-echo list-targets`。
+如果想在检查前确认会比较哪些本地化 README 文件，可以使用 `readme-echo list-targets`。如果想在不运行比较的情况下查看完整的生效配置，可以使用 `readme-echo show-config`。
 
 ## 配置
 
@@ -67,9 +67,11 @@ readme-echo check
 
 使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets`、`summary` 和 `reports` 的 JSON 对象；`summary` 包含 `checkedTargets` 和 `driftReports`。存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets`、`summary` 和 `reports` 只反映已经检查过的目标。
 
-将 `--pretty` 与 `--json` 一起使用，可用两个空格缩进格式化 JSON 输出，例如 `readme-echo check --json --pretty` 或 `readme-echo list-targets --json --pretty`。不使用 `--pretty` 时，JSON 输出保持紧凑格式。
+对于 `check` 和 `list-targets`，将 `--pretty` 与 `--json` 一起使用，可用两个空格缩进格式化 JSON 输出，例如 `readme-echo check --json --pretty` 或 `readme-echo list-targets --json --pretty`。不使用 `--pretty` 时，这些 JSON 输出保持紧凑格式。
 
 使用 `readme-echo list-targets` 可在不运行标题比较的情况下逐行打印目标 README 路径。使用 `readme-echo list-targets --json` 可将配置后的 `source` 和 `targets` 打印为 JSON。
+
+使用 `readme-echo show-config` 可打印经过默认值、目标发现和 `.readme-echo.json` 覆盖后得到的生效配置。它会以漂亮格式 JSON 打印 `source`、`targets`、`ignoreHeadings`、`allowLocalizedTitles` 和 `failFast`；为保持命令对称性，也接受 `--json` 和 `--pretty`，输出相同的漂亮格式。
 
 使用 `readme-echo check --target README-zh.md` 可只检查一个已配置或已发现的目标。重复使用 `--target` 可检查多个指定的 README 文件。
 

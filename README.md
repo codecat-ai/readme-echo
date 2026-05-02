@@ -33,7 +33,7 @@ readme-echo check
 
 By default, Readme Echo uses `README.md` as the source and checks every top-level file matching `README-*.md`.
 
-Use `readme-echo list-targets` before checking when you want to inspect which localized README files will be compared.
+Use `readme-echo list-targets` before checking when you want to inspect which localized README files will be compared. Use `readme-echo show-config` when you want to inspect the full effective configuration without running comparisons.
 
 ## Config
 
@@ -67,9 +67,11 @@ Use `readme-echo check --summary` to print a concise final line such as `Checked
 
 Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, `summary`, and `reports`; `summary` includes `checkedTargets` and `driftReports`. Drifting reports include the target path and structured heading differences. When fail-fast stops early, `targets`, `summary`, and `reports` reflect only the targets that were checked.
 
-Add `--pretty` with `--json` to format JSON output with two-space indentation, for example `readme-echo check --json --pretty` or `readme-echo list-targets --json --pretty`. Without `--pretty`, JSON output stays compact.
+For `check` and `list-targets`, add `--pretty` with `--json` to format JSON output with two-space indentation, for example `readme-echo check --json --pretty` or `readme-echo list-targets --json --pretty`. Without `--pretty`, those JSON outputs stay compact.
 
 Use `readme-echo list-targets` to print one target README path per line without running heading comparisons. Use `readme-echo list-targets --json` to print the configured `source` and `targets` as JSON.
+
+Use `readme-echo show-config` to print the effective configuration after defaults, target discovery, and `.readme-echo.json` overrides are applied. It prints pretty JSON with `source`, `targets`, `ignoreHeadings`, `allowLocalizedTitles`, and `failFast`; `--json` and `--pretty` are accepted for symmetry and produce the same pretty output.
 
 Use `readme-echo check --target README-zh.md` to check only one configured or discovered target. Repeat `--target` to check multiple specific README files.
 

@@ -176,6 +176,84 @@ test("CLI list-targets rejects --pretty without --json", async () => {
   assert.match(result.stderr, /Usage: readme-echo list-targets \[--json\] \[--pretty\]/);
 });
 
+test("CLI show-config prints effective discovered config as pretty JSON", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-show-config-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n");
+
+  const result = await runCli(cwd, ["show-config"]);
+  const expected = {
+    source: "README.md",
+    targets: ["README-jp.md", "README-zh.md"],
+    ignoreHeadings: [],
+    allowLocalizedTitles: false,
+    failFast: false,
+  };
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(result.stdout, `${JSON.stringify(expected, null, 2)}\n`);
+  assert.deepEqual(JSON.parse(result.stdout), expected);
+});
+
+test("CLI show-config includes .readme-echo.json overrides", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-show-config-overrides-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    source: "docs/README.md",
+    targets: ["docs/README-zh.md"],
+    ignoreHeadings: ["Changelog"],
+    allowLocalizedTitles: true,
+    failFast: true,
+  }));
+  await writeFile(join(cwd, "README.md"), "# Project\n");
+  await writeFile(join(cwd, "README-fr.md"), "# Project\n");
+
+  const result = await runCli(cwd, ["show-config", "--json"]);
+  const expected = {
+    source: "docs/README.md",
+    targets: ["docs/README-zh.md"],
+    ignoreHeadings: ["Changelog"],
+    allowLocalizedTitles: true,
+    failFast: true,
+  };
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(result.stdout, `${JSON.stringify(expected, null, 2)}\n`);
+  assert.deepEqual(JSON.parse(result.stdout), expected);
+});
+
+test("CLI show-config accepts --pretty", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-show-config-pretty-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+
+  const result = await runCli(cwd, ["show-config", "--pretty"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(result.stdout, `${JSON.stringify({
+    source: "README.md",
+    targets: [],
+    ignoreHeadings: [],
+    allowLocalizedTitles: false,
+    failFast: false,
+  }, null, 2)}\n`);
+});
+
+test("CLI show-config rejects unknown options with usage", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-show-config-usage-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+
+  const result = await runCli(cwd, ["show-config", "--quiet"]);
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Usage: readme-echo show-config \[--json\] \[--pretty\]/);
+});
+
 test("CLI check --target limits comparisons to the requested target README", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-target-option-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
