@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added `readme-echo check --summary` for concise checked-target and drift-report totals in text output.
 - Added JSON `summary.checkedTargets` and `summary.driftReports` fields to `readme-echo check --json` output.
 - Added optional fail-fast checks through `--fail-fast` and the `failFast` config field.
+- Added `readme-echo check --duplicates` for source and checked-target duplicate heading diagnostics in text and JSON output.
 - Updated JSON output so fail-fast reports include only checked targets when checking stops early.
 
 ## 0.1.0
