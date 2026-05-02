@@ -67,6 +67,8 @@ Use `readme-echo check --summary` to print a concise final line such as `Checked
 
 Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, `summary`, and `reports`; `summary` includes `checkedTargets` and `driftReports`. Drifting reports include the target path and structured heading differences. When fail-fast stops early, `targets`, `summary`, and `reports` reflect only the targets that were checked.
 
+Add `--pretty` with `--json` to format JSON output with two-space indentation, for example `readme-echo check --json --pretty` or `readme-echo list-targets --json --pretty`. Without `--pretty`, JSON output stays compact.
+
 Use `readme-echo list-targets` to print one target README path per line without running heading comparisons. Use `readme-echo list-targets --json` to print the configured `source` and `targets` as JSON.
 
 Use `readme-echo check --target README-zh.md` to check only one configured or discovered target. Repeat `--target` to check multiple specific README files.

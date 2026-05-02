@@ -67,6 +67,8 @@ readme-echo check
 
 使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets`、`summary` 和 `reports` 的 JSON 对象；`summary` 包含 `checkedTargets` 和 `driftReports`。存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets`、`summary` 和 `reports` 只反映已经检查过的目标。
 
+将 `--pretty` 与 `--json` 一起使用，可用两个空格缩进格式化 JSON 输出，例如 `readme-echo check --json --pretty` 或 `readme-echo list-targets --json --pretty`。不使用 `--pretty` 时，JSON 输出保持紧凑格式。
+
 使用 `readme-echo list-targets` 可在不运行标题比较的情况下逐行打印目标 README 路径。使用 `readme-echo list-targets --json` 可将配置后的 `source` 和 `targets` 打印为 JSON。
 
 使用 `readme-echo check --target README-zh.md` 可只检查一个已配置或已发现的目标。重复使用 `--target` 可检查多个指定的 README 文件。

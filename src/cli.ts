@@ -36,19 +36,26 @@ function formatJsonReport(source: string, targets: string[], results: Comparison
   };
 }
 
+function stringifyJson(value: unknown, pretty: boolean): string {
+  return JSON.stringify(value, null, pretty ? 2 : undefined);
+}
+
 type CheckOptions = {
   json: boolean;
+  pretty: boolean;
   quiet: boolean;
   summary: boolean;
   failFast: boolean;
   targets: string[];
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--quiet] [--summary] [--fail-fast] [--target <path>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--target <path>]";
+const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 
 function parseCheckOptions(options: string[]): CheckOptions | undefined {
   const parsed: CheckOptions = {
     json: false,
+    pretty: false,
     quiet: false,
     summary: false,
     failFast: false,
@@ -60,6 +67,8 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
 
     if (option === "--json") {
       parsed.json = true;
+    } else if (option === "--pretty") {
+      parsed.pretty = true;
     } else if (option === "--quiet") {
       parsed.quiet = true;
     } else if (option === "--summary") {
@@ -78,6 +87,10 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     }
   }
 
+  if (parsed.pretty && !parsed.json) {
+    return undefined;
+  }
+
   return parsed;
 }
 
@@ -87,19 +100,20 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const json = options.includes("--json");
 
   if (command === "list-targets") {
-    const hasUnknownOption = options.some((option) => option !== "--json");
+    const pretty = options.includes("--pretty");
+    const hasUnknownOption = options.some((option) => option !== "--json" && option !== "--pretty");
 
-    if (hasUnknownOption) {
-      console.error("Usage: readme-echo list-targets [--json]");
+    if (hasUnknownOption || (pretty && !json)) {
+      console.error(listTargetsUsage);
       return 1;
     }
 
     const config = await loadConfig(cwd);
     if (json) {
-      console.log(JSON.stringify({
+      console.log(stringifyJson({
         source: config.source,
         targets: config.targets,
-      }));
+      }, pretty));
       return 0;
     }
 
@@ -144,7 +158,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   }
 
   if (checkOptions.json) {
-    console.log(JSON.stringify(formatJsonReport(config.source, checkedTargets, comparisonResults)));
+    console.log(stringifyJson(formatJsonReport(config.source, checkedTargets, comparisonResults), checkOptions.pretty));
     return hasDrift ? 1 : 0;
   }
 
