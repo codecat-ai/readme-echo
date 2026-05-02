@@ -42,7 +42,8 @@ readme-echo check
   "source": "README.md",
   "targets": ["README-zh.md", "README-jp.md"],
   "ignoreHeadings": ["Changelog"],
-  "allowLocalizedTitles": true
+  "allowLocalizedTitles": true,
+  "failFast": false
 }
 ```
 
@@ -52,6 +53,7 @@ readme-echo check
 - `targets`：本地化 README 路径。
 - `ignoreHeadings`：要忽略的精确标题文本。
 - `allowLocalizedTitles`：只比较标题层级和顺序，不要求翻译后的标题与英文文本一致。
+- `failFast`：在第一个发生漂移的目标后停止，而不是检查所有目标。
 
 ## CLI 输出
 
@@ -59,9 +61,11 @@ readme-echo check
 
 当发现漂移时，命令以退出码 `1` 结束，并报告缺失、多余或顺序变化的标题。
 
-使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets` 和 `reports` 的 JSON 对象；存在漂移的报告会包含目标路径和结构化标题差异。
+使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets` 和 `reports` 的 JSON 对象；存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets` 和 `reports` 只包含已经检查过的目标。
 
 使用 `readme-echo check --quiet` 可在文件保持同步时禁止输出。漂移报告仍会打印。
+
+使用 `readme-echo check --fail-fast` 可在第一个发生漂移的目标处停止。即使配置中省略 `failFast` 或将其设为 `false`，该标志也会启用 fail-fast。fail-fast 提前停止时，文本输出只打印第一个漂移报告。
 
 ## CI
 
@@ -106,8 +110,8 @@ npm test
 
 ## 路线图
 
-- 支持可选的快速失败模式。
 - 为重复标题添加更多诊断。
+- 在 JSON 输出中添加每个目标的耗时。
 - 发布带签名的软件包版本。
 
 ## 贡献

@@ -33,20 +33,24 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const options = argv.slice(1);
   const json = options.includes("--json");
   const quiet = options.includes("--quiet");
-  const hasUnknownOption = options.some((option) => option !== "--json" && option !== "--quiet");
+  const cliFailFast = options.includes("--fail-fast");
+  const hasUnknownOption = options.some((option) => option !== "--json" && option !== "--quiet" && option !== "--fail-fast");
 
   if (command !== "check" || hasUnknownOption) {
-    console.error("Usage: readme-echo check [--json] [--quiet]");
+    console.error("Usage: readme-echo check [--json] [--quiet] [--fail-fast]");
     return 1;
   }
 
   const config = await loadConfig(cwd);
+  const failFast = cliFailFast || config.failFast;
   const sourceHeadings = await readHeadings(cwd, config.source, config.ignoreHeadings);
+  const checkedTargets: string[] = [];
   const reports: string[] = [];
   const comparisonResults: ComparisonResult[] = [];
   let hasDrift = false;
 
   for (const target of config.targets) {
+    checkedTargets.push(target);
     const targetHeadings = await readHeadings(cwd, target, config.ignoreHeadings);
     const result = compareHeadings(config.source, target, sourceHeadings, targetHeadings, {
       allowLocalizedTitles: config.allowLocalizedTitles,
@@ -56,11 +60,15 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
       hasDrift = true;
       reports.push(formatComparisonReport(result));
       comparisonResults.push(result);
+
+      if (failFast) {
+        break;
+      }
     }
   }
 
   if (json) {
-    console.log(JSON.stringify(formatJsonReport(config.source, config.targets, comparisonResults)));
+    console.log(JSON.stringify(formatJsonReport(config.source, checkedTargets, comparisonResults)));
     return hasDrift ? 1 : 0;
   }
 

@@ -6,6 +6,7 @@ export type ReadmeEchoConfig = {
   targets: string[];
   ignoreHeadings: string[];
   allowLocalizedTitles: boolean;
+  failFast: boolean;
 };
 
 type RawConfig = Partial<ReadmeEchoConfig>;
@@ -14,6 +15,7 @@ const defaultConfig = {
   source: "README.md",
   ignoreHeadings: [],
   allowLocalizedTitles: false,
+  failFast: false,
 } satisfies Omit<ReadmeEchoConfig, "targets">;
 
 function isStringArray(value: unknown): value is string[] {
@@ -37,6 +39,7 @@ function normalizeConfig(raw: RawConfig, discoveredTargets: string[]): ReadmeEch
     allowLocalizedTitles: typeof raw.allowLocalizedTitles === "boolean"
       ? raw.allowLocalizedTitles
       : defaultConfig.allowLocalizedTitles,
+    failFast: typeof raw.failFast === "boolean" ? raw.failFast : defaultConfig.failFast,
   };
 }
 

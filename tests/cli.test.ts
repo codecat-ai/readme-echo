@@ -97,6 +97,94 @@ test("CLI prints JSON drift report with --json", async () => {
   ]);
 });
 
+test("CLI JSON fail-fast reports only targets checked before first drift", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-json-fail-fast-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--json", "--fail-fast"]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    source: string;
+    targets: string[];
+    reports: Array<{ target: string }>;
+  };
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, false);
+  assert.equal(payload.source, "README.md");
+  assert.deepEqual(payload.targets, ["README-jp.md", "README-zh.md"]);
+  assert.deepEqual(payload.reports.map((report) => report.target), ["README-zh.md"]);
+});
+
+test("CLI JSON fail-fast from config stops before later targets", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-json-config-fail-fast-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    failFast: true,
+    targets: ["README-zh.md", "README-jp.md", "README-fr.md"],
+  }));
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-fr.md"), "# Project\n\n## Install\n");
+
+  const result = await runCli(cwd, ["check", "--json"]);
+  const payload = JSON.parse(result.stdout) as {
+    targets: string[];
+    reports: Array<{ target: string }>;
+  };
+
+  assert.equal(result.code, 1);
+  assert.deepEqual(payload.targets, ["README-zh.md", "README-jp.md"]);
+  assert.deepEqual(payload.reports.map((report) => report.target), ["README-jp.md"]);
+});
+
+test("CLI --fail-fast overrides config false", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-override-fail-fast-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    failFast: false,
+    targets: ["README-zh.md", "README-jp.md", "README-fr.md"],
+  }));
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-fr.md"), "# Project\n\n## Install\n");
+
+  const result = await runCli(cwd, ["check", "--json", "--fail-fast"]);
+  const payload = JSON.parse(result.stdout) as {
+    targets: string[];
+    reports: Array<{ target: string }>;
+  };
+
+  assert.equal(result.code, 1);
+  assert.deepEqual(payload.targets, ["README-zh.md", "README-jp.md"]);
+  assert.deepEqual(payload.reports.map((report) => report.target), ["README-jp.md"]);
+});
+
+test("CLI text fail-fast prints only the first drift report", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-text-fail-fast-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    targets: ["README-zh.md", "README-jp.md", "README-fr.md"],
+  }));
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-fr.md"), "# Project\n\n## Install\n");
+
+  const result = await runCli(cwd, ["check", "--fail-fast"]);
+
+  assert.equal(result.code, 1);
+  assert.match(result.stdout, /README-jp\.md/);
+  assert.doesNotMatch(result.stdout, /README-fr\.md/);
+  assert.equal(result.stderr, "");
+});
+
 test("CLI keeps usage errors human-readable when --json is present", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-json-usage-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
