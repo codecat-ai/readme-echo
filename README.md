@@ -33,6 +33,8 @@ readme-echo check
 
 By default, Readme Echo uses `README.md` as the source and checks every top-level file matching `README-*.md`.
 
+Use `readme-echo list-targets` before checking when you want to inspect which localized README files will be compared.
+
 ## Config
 
 Add `.readme-echo.json` at the repository root when defaults are not enough:
@@ -64,6 +66,8 @@ When drift is found, it exits with code `1` and reports missing, extra, or reord
 Use `readme-echo check --summary` to print a concise final line such as `Checked 2 target README file(s): 1 drift report(s).`
 
 Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, `summary`, and `reports`; `summary` includes `checkedTargets` and `driftReports`. Drifting reports include the target path and structured heading differences. When fail-fast stops early, `targets`, `summary`, and `reports` reflect only the targets that were checked.
+
+Use `readme-echo list-targets` to print one target README path per line without running heading comparisons. Use `readme-echo list-targets --json` to print the configured `source` and `targets` as JSON.
 
 Use `readme-echo check --quiet` to suppress output when files are synchronized. Drift reports are still printed. When combined with `--summary`, the summary is suppressed on success and printed on failure.
 

@@ -84,6 +84,69 @@ test("CLI quiet summary is printed on failure", async () => {
   assert.equal(result.stderr, "");
 });
 
+test("CLI list-targets prints discovered target READMEs one per line", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-list-targets-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n");
+  await writeFile(join(cwd, "notes.md"), "# Notes\n");
+
+  const result = await runCli(cwd, ["list-targets"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stdout, "README-jp.md\nREADME-zh.md\n");
+  assert.equal(result.stderr, "");
+});
+
+test("CLI list-targets prints JSON source and targets", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-list-targets-json-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n");
+
+  const result = await runCli(cwd, ["list-targets", "--json"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.deepEqual(JSON.parse(result.stdout), {
+    source: "README.md",
+    targets: ["README-jp.md", "README-zh.md"],
+  });
+});
+
+test("CLI list-targets respects configured source and targets", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-list-targets-config-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    source: "docs/README.md",
+    targets: ["docs/README-zh.md", "docs/README-jp.md"],
+  }));
+  await writeFile(join(cwd, "README.md"), "# Project\n");
+  await writeFile(join(cwd, "README-fr.md"), "# Project\n");
+
+  const result = await runCli(cwd, ["list-targets", "--json"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.deepEqual(JSON.parse(result.stdout), {
+    source: "docs/README.md",
+    targets: ["docs/README-zh.md", "docs/README-jp.md"],
+  });
+});
+
+test("CLI list-targets rejects unknown options with usage", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-list-targets-usage-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+
+  const result = await runCli(cwd, ["list-targets", "--quiet"]);
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Usage: readme-echo list-targets \[--json\]/);
+});
+
 test("CLI prints JSON success report with --json", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-json-pass-${Date.now()}`);
   await mkdir(cwd, { recursive: true });

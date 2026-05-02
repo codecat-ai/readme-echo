@@ -33,6 +33,8 @@ readme-echo check
 
 默认情况下，Readme Echo 使用 `README.md` 作为源文件，并检查所有匹配 `README-*.md` 的顶层文件。
 
+如果想在检查前确认会比较哪些本地化 README 文件，可以使用 `readme-echo list-targets`。
+
 ## 配置
 
 当默认行为不够时，在仓库根目录添加 `.readme-echo.json`：
@@ -64,6 +66,8 @@ readme-echo check
 使用 `readme-echo check --summary` 可打印简洁的最终摘要行，例如 `Checked 2 target README file(s): 1 drift report(s).`
 
 使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets`、`summary` 和 `reports` 的 JSON 对象；`summary` 包含 `checkedTargets` 和 `driftReports`。存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets`、`summary` 和 `reports` 只反映已经检查过的目标。
+
+使用 `readme-echo list-targets` 可在不运行标题比较的情况下逐行打印目标 README 路径。使用 `readme-echo list-targets --json` 可将配置后的 `source` 和 `targets` 打印为 JSON。
 
 使用 `readme-echo check --quiet` 可在文件保持同步时禁止输出。漂移报告仍会打印。与 `--summary` 一起使用时，成功时会隐藏摘要，失败时会打印摘要。
 

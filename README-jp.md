@@ -33,6 +33,8 @@ readme-echo check
 
 デフォルトでは、Readme Echo は `README.md` をソースとして使い、`README-*.md` に一致するすべてのトップレベルファイルをチェックします。
 
+チェック前に比較対象になるローカライズ README を確認したい場合は、`readme-echo list-targets` を使います。
+
 ## 設定
 
 デフォルトで足りない場合は、リポジトリルートに `.readme-echo.json` を追加します。
@@ -64,6 +66,8 @@ readme-echo check
 `readme-echo check --summary` を使うと、`Checked 2 target README file(s): 1 drift report(s).` のような簡潔な最終サマリー行を出力できます。
 
 `readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`summary`、`reports` を含む JSON オブジェクトを出力し、`summary` には `checkedTargets` と `driftReports` が含まれます。差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。fail-fast が途中で停止した場合、`targets`、`summary`、`reports` には確認済みのターゲットだけが反映されます。
+
+`readme-echo list-targets` を使うと、見出し比較を実行せずにターゲット README のパスを 1 行ずつ出力できます。`readme-echo list-targets --json` を使うと、設定後の `source` と `targets` を JSON として出力できます。
 
 `readme-echo check --quiet` を使うと、ファイルが同期している場合の出力を抑制できます。差分レポートは引き続き出力されます。`--summary` と組み合わせると、成功時はサマリーを抑制し、失敗時はサマリーを出力します。
 
