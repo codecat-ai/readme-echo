@@ -63,7 +63,7 @@ readme-echo check
 
 差分が見つかった場合、終了コード `1` で終了し、欠落、余分、または順序変更された見出しを報告します。
 
-使い方: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
+使い方: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
 
 使い方: `readme-echo version`
 
@@ -93,7 +93,7 @@ readme-echo check
 
 `readme-echo check --ignore-case` を使うと、この実行では JavaScript の小文字化で見出しタイトルを比較するため、`Introduction` と `introduction` のようなタイトルを同じものとして扱えます。見出しレベル、順序、欠落と余分の診断、重複見出し診断、`ignoreHeadings` の一致処理は変わりません。`allowLocalizedTitles` が有効な場合、タイトルテキストはすでに一致を要求されないため、このフラグに実質的な影響はありません。
 
-`readme-echo check --max-depth 2` を使うと、この実行ではレベル 2 より深い見出しを無視できます。値は正の整数でなければなりません。深さフィルターは、構造比較と重複見出し診断の前に、ソース README とターゲット README の両方の見出しへ適用されます。
+`readme-echo check --min-depth 2` を使うと、この実行ではレベル 2 より浅い見出しを無視でき、`readme-echo check --max-depth 2` を使うとレベル 2 より深い見出しを無視できます。値は正の整数でなければならず、`--min-depth` は `--max-depth` より大きくできません。深さフィルターは、構造比較と重複見出し診断の前に、ソース README とターゲット README の両方の見出しへ適用されます。
 
 `readme-echo check --duplicates` を使うと、`ignoreHeadings` のフィルタリング後に、ソース README と確認済みターゲット内の重複見出しを報告できます。重複とは、同じファイル内で同じ見出しレベルと同じテキストが複数回現れることです。重複レポートがある場合、`ok` は false になり終了コードは `1` になりますが、`summary.driftReports` は引き続きファイル間の差分だけを表します。JSON 出力には、各ファイルパスと重複項目 `{ level, text, count }` を含む `duplicateReports` が追加されます。
 

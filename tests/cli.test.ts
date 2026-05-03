@@ -812,6 +812,113 @@ test("CLI check --max-depth filters source and target headings before comparison
   assert.deepEqual(payload.duplicateReports, []);
 });
 
+test("CLI check --min-depth filters shallow headings before JSON comparison and duplicate diagnostics", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-min-depth-json-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    targets: ["README-zh.md", "README-jp.md"],
+    ignoreHeadings: ["Ignored"],
+  }));
+  await writeFile(join(cwd, "README.md"), [
+    "# Source Title",
+    "",
+    "## Source Overview",
+    "",
+    "### Shared",
+    "",
+    "#### Ignored",
+    "",
+    "#### API",
+    "",
+    "#### API",
+    "",
+    "### Source Tail",
+    "",
+  ].join("\n"));
+  await writeFile(join(cwd, "README-zh.md"), [
+    "# Target Title",
+    "",
+    "## Target Overview",
+    "",
+    "### Shared",
+    "",
+    "#### Ignored",
+    "",
+    "#### API",
+    "",
+    "#### API",
+    "",
+    "### Source Tail",
+    "",
+  ].join("\n"));
+  await writeFile(join(cwd, "README-jp.md"), [
+    "# Target Title",
+    "",
+    "## Target Overview",
+    "",
+    "### Different",
+    "",
+    "#### API",
+    "",
+    "#### API",
+    "",
+    "### Target Tail",
+    "",
+  ].join("\n"));
+
+  const result = await runCli(cwd, [
+    "check",
+    "--json",
+    "--no-timing",
+    "--duplicates",
+    "--fail-fast",
+    "--target",
+    "README-zh.md",
+    "--target",
+    "README-jp.md",
+    "--ignore-heading",
+    "API",
+    "--min-depth",
+    "3",
+    "--max-depth",
+    "3",
+  ]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    targets: string[];
+    summary: { checkedTargets: number; driftReports: number };
+    targetReports: Array<{ target: string; ok: boolean }>;
+    reports: Array<{ target: string; differences: unknown[] }>;
+    duplicateReports: unknown[];
+  };
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, false);
+  assert.deepEqual(payload.targets, ["README-zh.md", "README-jp.md"]);
+  assert.deepEqual(payload.targetReports, [
+    { target: "README-zh.md", ok: true },
+    { target: "README-jp.md", ok: false },
+  ]);
+  assert.deepEqual(payload.summary, { checkedTargets: 2, driftReports: 1 });
+  assert.deepEqual(payload.duplicateReports, []);
+  assert.equal(payload.reports.length, 1);
+  assert.equal(payload.reports[0]?.target, "README-jp.md");
+});
+
+test("CLI check --min-depth filters shallow headings in text output", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-min-depth-text-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Source Overview\n\n### Shared\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Target Overview\n\n### Shared\n");
+
+  const result = await runCli(cwd, ["check", "--min-depth", "3"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stdout, "All README files are synchronized.\n");
+  assert.equal(result.stderr, "");
+});
+
 test("CLI check rejects missing and invalid --max-depth values with usage", async () => {
   for (const value of [undefined, "0", "-1", "1.5", "abc"]) {
     const cwd = join(tmpdir(), `readme-echo-cli-max-depth-usage-${value ?? "missing"}-${Date.now()}`);
@@ -823,6 +930,26 @@ test("CLI check rejects missing and invalid --max-depth values with usage", asyn
     assert.equal(result.code, 1);
     assert.equal(result.stdout, "");
     assert.match(result.stderr, /Usage: readme-echo check .* \[--max-depth <n>\]/);
+  }
+});
+
+test("CLI check rejects missing, invalid, and contradictory --min-depth values with usage", async () => {
+  for (const argv of [
+    ["check", "--min-depth"],
+    ["check", "--min-depth", "0"],
+    ["check", "--min-depth", "-1"],
+    ["check", "--min-depth", "1.5"],
+    ["check", "--min-depth", "abc"],
+    ["check", "--min-depth", "4", "--max-depth", "3"],
+  ]) {
+    const cwd = join(tmpdir(), `readme-echo-cli-min-depth-usage-${Date.now()}`);
+    await mkdir(cwd, { recursive: true });
+
+    const result = await runCli(cwd, argv);
+
+    assert.equal(result.code, 1);
+    assert.equal(result.stdout, "");
+    assert.match(result.stderr, /Usage: readme-echo check .* \[--min-depth <n>\]/);
   }
 });
 
