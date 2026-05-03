@@ -95,10 +95,11 @@ type CheckOptions = {
   summary: boolean;
   failFast: boolean;
   duplicates: boolean;
+  sourceOnly: boolean;
   targets: string[];
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--target <path>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 
@@ -110,6 +111,7 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     summary: false,
     failFast: false,
     duplicates: false,
+    sourceOnly: false,
     targets: [],
   };
 
@@ -128,6 +130,8 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
       parsed.failFast = true;
     } else if (option === "--duplicates") {
       parsed.duplicates = true;
+    } else if (option === "--source-only") {
+      parsed.sourceOnly = true;
     } else if (option === "--target") {
       const target = options[index + 1];
       if (!target || target.startsWith("--")) {
@@ -141,6 +145,10 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
   }
 
   if (parsed.pretty && !parsed.json) {
+    return undefined;
+  }
+
+  if (parsed.sourceOnly && !parsed.duplicates) {
     return undefined;
   }
 
@@ -215,7 +223,9 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   for (const target of targets) {
     checkedTargets.push(target);
     const targetHeadings = await readHeadings(cwd, target, config.ignoreHeadings);
-    const targetDuplicateReport = checkOptions.duplicates ? detectDuplicateHeadings(target, targetHeadings) : undefined;
+    const targetDuplicateReport = checkOptions.duplicates && !checkOptions.sourceOnly
+      ? detectDuplicateHeadings(target, targetHeadings)
+      : undefined;
     const result = compareHeadings(config.source, target, sourceHeadings, targetHeadings, {
       allowLocalizedTitles: config.allowLocalizedTitles,
     });

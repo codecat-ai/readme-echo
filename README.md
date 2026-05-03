@@ -63,7 +63,7 @@ When files are synchronized, the command exits with code `0`.
 
 When drift is found, it exits with code `1` and reports missing, extra, or reordered headings.
 
-Usage: `readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--target <path>]`
+Usage: `readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>]`
 
 Use `readme-echo check --summary` to print a concise final line such as `Checked 2 target README file(s): 1 drift report(s).`
 
@@ -78,6 +78,8 @@ Use `readme-echo show-config` to print the effective configuration after default
 Use `readme-echo check --target README-zh.md` to check only one configured or discovered target. Repeat `--target` to check multiple specific README files.
 
 Use `readme-echo check --duplicates` to report repeated headings in the source README and each checked target after `ignoreHeadings` filtering. A duplicate is the same heading level and text appearing more than once in the same file. Duplicate reports make `ok` false and exit with code `1`, but `summary.driftReports` remains reserved for cross-file drift. JSON output adds `duplicateReports` with each file path and duplicate `{ level, text, count }` entry.
+
+Add `--source-only` to `readme-echo check --duplicates` to inspect duplicate headings only in the source README. Target README files are still checked for normal source-vs-target drift, but their duplicate headings are not read as duplicate diagnostics and are omitted from text and JSON `duplicateReports` output.
 
 Use `readme-echo check --quiet` to suppress output when files are synchronized. Drift reports are still printed. When combined with `--summary`, the summary is suppressed on success and printed on failure.
 

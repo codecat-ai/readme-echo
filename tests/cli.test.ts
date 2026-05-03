@@ -351,6 +351,58 @@ test("CLI check --duplicates prints JSON duplicate reports without counting them
   ]);
 });
 
+test("CLI check --duplicates --source-only ignores target duplicate headings", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-duplicates-source-only-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    allowLocalizedTitles: true,
+  }));
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Setup\n\n## Setup\n");
+
+  const result = await runCli(cwd, ["check", "--duplicates", "--source-only", "--json"]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    reports: unknown[];
+    duplicateReports: unknown[];
+  };
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, true);
+  assert.deepEqual(payload.reports, []);
+  assert.deepEqual(payload.duplicateReports, []);
+  assert.doesNotMatch(result.stdout, /README-zh\.md.*Setup/);
+});
+
+test("CLI check --source-only without --duplicates prints usage", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-source-only-usage-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+
+  const result = await runCli(cwd, ["check", "--source-only"]);
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--target <path>\]/);
+});
+
+test("CLI check --duplicates --source-only prints only source duplicate reports", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-duplicates-source-only-text-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Install\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Usage\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--duplicates", "--source-only", "--summary"]);
+
+  assert.equal(result.code, 1);
+  assert.match(result.stdout, /Duplicate headings in README\.md:/);
+  assert.match(result.stdout, /- ## Install appears 2 times/);
+  assert.doesNotMatch(result.stdout, /Duplicate headings in README-zh\.md:/);
+  assert.doesNotMatch(result.stdout, /- ## Usage appears 2 times/);
+  assert.match(result.stdout, /Checked 1 target README file\(s\): 1 drift report\(s\)\./);
+  assert.equal(result.stderr, "");
+});
+
 test("CLI check --duplicates respects ignored headings and --target", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-duplicates-target-ignore-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
@@ -607,7 +659,7 @@ test("CLI keeps usage errors human-readable when --json is present", async () =>
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--target <path>\]/);
 });
 
 test("CLI check rejects --pretty without --json", async () => {
@@ -618,7 +670,7 @@ test("CLI check rejects --pretty without --json", async () => {
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--target <path>\]/);
 });
 
 test("CLI exits 1 and prints drift when mismatch exists", async () => {

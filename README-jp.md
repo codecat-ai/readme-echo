@@ -63,7 +63,7 @@ readme-echo check
 
 差分が見つかった場合、終了コード `1` で終了し、欠落、余分、または順序変更された見出しを報告します。
 
-使い方: `readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--target <path>]`
+使い方: `readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>]`
 
 `readme-echo check --summary` を使うと、`Checked 2 target README file(s): 1 drift report(s).` のような簡潔な最終サマリー行を出力できます。
 
@@ -78,6 +78,8 @@ readme-echo check
 `readme-echo check --target README-zh.md` を使うと、設定済みまたは検出済みのターゲットを 1 つだけ確認できます。`--target` を繰り返すと、複数の特定 README ファイルを確認できます。
 
 `readme-echo check --duplicates` を使うと、`ignoreHeadings` のフィルタリング後に、ソース README と確認済みターゲット内の重複見出しを報告できます。重複とは、同じファイル内で同じ見出しレベルと同じテキストが複数回現れることです。重複レポートがある場合、`ok` は false になり終了コードは `1` になりますが、`summary.driftReports` は引き続きファイル間の差分だけを表します。JSON 出力には、各ファイルパスと重複項目 `{ level, text, count }` を含む `duplicateReports` が追加されます。
+
+`readme-echo check --duplicates` に `--source-only` を追加すると、重複見出しの検査はソース README だけに限定されます。ターゲット README は通常のソース対ターゲット差分比較では引き続き確認されますが、ターゲット側の重複見出しは重複診断として読み取られず、テキスト出力や JSON の `duplicateReports` にも含まれません。
 
 `readme-echo check --quiet` を使うと、ファイルが同期している場合の出力を抑制できます。差分レポートは引き続き出力されます。`--summary` と組み合わせると、成功時はサマリーを抑制し、失敗時はサマリーを出力します。
 

@@ -63,7 +63,7 @@ readme-echo check
 
 当发现漂移时，命令以退出码 `1` 结束，并报告缺失、多余或顺序变化的标题。
 
-用法：`readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--target <path>]`
+用法：`readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>]`
 
 使用 `readme-echo check --summary` 可打印简洁的最终摘要行，例如 `Checked 2 target README file(s): 1 drift report(s).`
 
@@ -78,6 +78,8 @@ readme-echo check
 使用 `readme-echo check --target README-zh.md` 可只检查一个已配置或已发现的目标。重复使用 `--target` 可检查多个指定的 README 文件。
 
 使用 `readme-echo check --duplicates` 可在应用 `ignoreHeadings` 过滤后，报告源 README 和每个已检查目标中的重复标题。重复标题指同一文件中相同层级和相同文本的标题出现多次。重复标题报告会让 `ok` 为 false，并以退出码 `1` 结束，但 `summary.driftReports` 仍只表示跨文件漂移。JSON 输出会添加 `duplicateReports`，其中包含每个文件路径以及重复项 `{ level, text, count }`。
+
+在 `readme-echo check --duplicates` 中添加 `--source-only`，可只检查源 README 中的重复标题。目标 README 仍会执行正常的源与目标漂移比较，但其重复标题不会作为重复诊断读取，也不会出现在文本输出或 JSON `duplicateReports` 中。
 
 使用 `readme-echo check --quiet` 可在文件保持同步时禁止输出。漂移报告仍会打印。与 `--summary` 一起使用时，成功时会隐藏摘要，失败时会打印摘要。
 
