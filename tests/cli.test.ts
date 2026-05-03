@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import test from "node:test";
 
+import packageJson from "../package.json" with { type: "json" };
 import { run } from "../src/cli.ts";
 
 async function runCli(cwd: string, argv: string[] = ["check"]): Promise<{ code: number; stdout: string; stderr: string }> {
@@ -32,6 +33,22 @@ function assertNonNegativeNumber(value: unknown): asserts value is number {
   assert.equal(typeof value, "number");
   assert.ok(value >= 0);
 }
+
+test("CLI version command prints package version", async () => {
+  const result = await runCli(tmpdir(), ["version"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stdout, `${packageJson.version}\n`);
+  assert.equal(result.stderr, "");
+});
+
+test("CLI --version flag prints package version", async () => {
+  const result = await runCli(tmpdir(), ["--version"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stdout, `${packageJson.version}\n`);
+  assert.equal(result.stderr, "");
+});
 
 test("CLI stays silent for synchronized READMEs with --quiet", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-quiet-pass-${Date.now()}`);
