@@ -63,7 +63,7 @@ When files are synchronized, the command exits with code `0`.
 
 When drift is found, it exits with code `1` and reports missing, extra, or reordered headings.
 
-Usage: `readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>]`
+Usage: `readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>] [--ignore-heading <text>]`
 
 Use `readme-echo check --summary` to print a concise final line such as `Checked 2 target README file(s): 1 drift report(s).`
 
@@ -76,6 +76,8 @@ Use `readme-echo list-targets` to print one target README path per line without 
 Use `readme-echo show-config` to print the effective configuration after defaults, target discovery, and `.readme-echo.json` overrides are applied. It prints pretty JSON with `source`, `targets`, `ignoreHeadings`, `allowLocalizedTitles`, and `failFast`; `--json` and `--pretty` are accepted for symmetry and produce the same pretty output.
 
 Use `readme-echo check --target README-zh.md` to check only one configured or discovered target. Repeat `--target` to check multiple specific README files.
+
+Use `readme-echo check --ignore-heading "Changelog"` to ignore one additional exact heading text for this run. Repeat `--ignore-heading` to add multiple runtime ignores; they are applied in addition to `.readme-echo.json` `ignoreHeadings`.
 
 Use `readme-echo check --duplicates` to report repeated headings in the source README and each checked target after `ignoreHeadings` filtering. A duplicate is the same heading level and text appearing more than once in the same file. Duplicate reports make `ok` false and exit with code `1`, but `summary.driftReports` remains reserved for cross-file drift. JSON output adds `duplicateReports` with each file path and duplicate `{ level, text, count }` entry.
 

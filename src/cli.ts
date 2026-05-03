@@ -112,9 +112,10 @@ type CheckOptions = {
   duplicates: boolean;
   sourceOnly: boolean;
   targets: string[];
+  ignoreHeadings: string[];
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>] [--ignore-heading <text>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 
@@ -128,6 +129,7 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     duplicates: false,
     sourceOnly: false,
     targets: [],
+    ignoreHeadings: [],
   };
 
   for (let index = 0; index < options.length; index += 1) {
@@ -153,6 +155,13 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
         return undefined;
       }
       parsed.targets.push(target);
+      index += 1;
+    } else if (option === "--ignore-heading") {
+      const heading = options[index + 1];
+      if (!heading || heading.startsWith("--")) {
+        return undefined;
+      }
+      parsed.ignoreHeadings.push(heading);
       index += 1;
     } else {
       return undefined;
@@ -221,8 +230,9 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const config = await loadConfig(cwd);
   const failFast = checkOptions.failFast || config.failFast;
   const targets = checkOptions.targets.length > 0 ? checkOptions.targets : config.targets;
+  const ignoreHeadings = [...config.ignoreHeadings, ...checkOptions.ignoreHeadings];
   const checkStartTime = performance.now();
-  const sourceHeadings = await readHeadings(cwd, config.source, config.ignoreHeadings);
+  const sourceHeadings = await readHeadings(cwd, config.source, ignoreHeadings);
   const checkedTargets: string[] = [];
   const targetReports: TargetReport[] = [];
   const reports: string[] = [];
@@ -240,7 +250,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   for (const target of targets) {
     const targetStartTime = performance.now();
     checkedTargets.push(target);
-    const targetHeadings = await readHeadings(cwd, target, config.ignoreHeadings);
+    const targetHeadings = await readHeadings(cwd, target, ignoreHeadings);
     const targetDuplicateReport = checkOptions.duplicates && !checkOptions.sourceOnly
       ? detectDuplicateHeadings(target, targetHeadings)
       : undefined;
