@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Added optional fail-fast checks through `--fail-fast` and the `failFast` config field.
 - Added `readme-echo check --duplicates` for source and checked-target duplicate heading diagnostics in text and JSON output.
 - Added `readme-echo check --duplicates --source-only` for source-only duplicate heading diagnostics while still checking target drift.
+- Added per-target `targetReports[].durationMs` and summary-level `totalDurationMs` to `readme-echo check --json` output.
 - Updated JSON output so fail-fast reports include only checked targets when checking stops early.
 
 ## 0.1.0

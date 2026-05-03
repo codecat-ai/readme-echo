@@ -28,6 +28,11 @@ async function runCli(cwd: string, argv: string[] = ["check"]): Promise<{ code: 
   }
 }
 
+function assertNonNegativeNumber(value: unknown): asserts value is number {
+  assert.equal(typeof value, "number");
+  assert.ok(value >= 0);
+}
+
 test("CLI stays silent for synchronized READMEs with --quiet", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-quiet-pass-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
@@ -271,6 +276,40 @@ test("CLI check --target limits comparisons to the requested target README", asy
   assert.deepEqual(payload.reports, []);
 });
 
+test("CLI check --json includes per-target and total timing data", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-json-timing-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+
+  const result = await runCli(cwd, ["check", "--json"]);
+  const payload = JSON.parse(result.stdout) as {
+    summary: {
+      checkedTargets: number;
+      driftReports: number;
+      totalDurationMs?: unknown;
+    };
+    targetReports?: Array<{
+      target: string;
+      ok: boolean;
+      durationMs?: unknown;
+    }>;
+  };
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.summary.checkedTargets, 2);
+  assert.equal(payload.summary.driftReports, 1);
+  assertNonNegativeNumber(payload.summary.totalDurationMs);
+  assert.ok(Array.isArray(payload.targetReports));
+  assert.deepEqual(payload.targetReports.map((report) => report.target), ["README-jp.md", "README-zh.md"]);
+  assert.deepEqual(payload.targetReports.map((report) => report.ok), [false, true]);
+  for (const report of payload.targetReports) {
+    assertNonNegativeNumber(report.durationMs);
+  }
+});
+
 test("CLI check ignores duplicate headings unless --duplicates is present", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-duplicates-default-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
@@ -278,19 +317,33 @@ test("CLI check ignores duplicate headings unless --duplicates is present", asyn
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Install\n");
 
   const result = await runCli(cwd, ["check", "--json"]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    source: string;
+    targets: string[];
+    summary: {
+      checkedTargets: number;
+      driftReports: number;
+      totalDurationMs: unknown;
+    };
+    targetReports: Array<{ target: string; ok: boolean; durationMs: unknown }>;
+    reports: unknown[];
+  };
 
   assert.equal(result.code, 0);
   assert.equal(result.stderr, "");
-  assert.deepEqual(JSON.parse(result.stdout), {
-    ok: true,
-    source: "README.md",
-    targets: ["README-zh.md"],
-    summary: {
-      checkedTargets: 1,
-      driftReports: 0,
-    },
-    reports: [],
-  });
+  assert.equal(payload.ok, true);
+  assert.equal(payload.source, "README.md");
+  assert.deepEqual(payload.targets, ["README-zh.md"]);
+  assert.equal(payload.summary.checkedTargets, 1);
+  assert.equal(payload.summary.driftReports, 0);
+  assertNonNegativeNumber(payload.summary.totalDurationMs);
+  assert.deepEqual(payload.targetReports.map((report) => ({
+    target: report.target,
+    ok: report.ok,
+  })), [{ target: "README-zh.md", ok: true }]);
+  assertNonNegativeNumber(payload.targetReports[0].durationMs);
+  assert.deepEqual(payload.reports, []);
 });
 
 test("CLI check --duplicates prints source and target duplicate heading reports", async () => {
@@ -323,7 +376,9 @@ test("CLI check --duplicates prints JSON duplicate reports without counting them
     summary: {
       checkedTargets: number;
       driftReports: number;
+      totalDurationMs: unknown;
     };
+    targetReports: Array<{ target: string; ok: boolean; durationMs: unknown }>;
     reports: Array<{ target: string }>;
     duplicateReports: Array<{
       path: string;
@@ -334,10 +389,14 @@ test("CLI check --duplicates prints JSON duplicate reports without counting them
   assert.equal(result.code, 1);
   assert.equal(result.stderr, "");
   assert.equal(payload.ok, false);
-  assert.deepEqual(payload.summary, {
-    checkedTargets: 1,
-    driftReports: 1,
-  });
+  assert.equal(payload.summary.checkedTargets, 1);
+  assert.equal(payload.summary.driftReports, 1);
+  assertNonNegativeNumber(payload.summary.totalDurationMs);
+  assert.deepEqual(payload.targetReports.map((report) => ({
+    target: report.target,
+    ok: report.ok,
+  })), [{ target: "README-zh.md", ok: false }]);
+  assertNonNegativeNumber(payload.targetReports[0].durationMs);
   assert.deepEqual(payload.reports.map((report) => report.target), ["README-zh.md"]);
   assert.deepEqual(payload.duplicateReports, [
     {
@@ -458,21 +517,38 @@ test("CLI prints JSON success report with --json", async () => {
   await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--json"]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    source: string;
+    targets: string[];
+    summary: {
+      checkedTargets: number;
+      driftReports: number;
+      totalDurationMs: unknown;
+    };
+    targetReports: Array<{ target: string; ok: boolean; durationMs: unknown }>;
+    reports: unknown[];
+  };
 
   assert.equal(result.code, 0);
   assert.equal(result.stderr, "");
-  const expected = {
-    ok: true,
-    source: "README.md",
-    targets: ["README-jp.md", "README-zh.md"],
-    summary: {
-      checkedTargets: 2,
-      driftReports: 0,
-    },
-    reports: [],
-  };
-  assert.equal(result.stdout, `${JSON.stringify(expected)}\n`);
-  assert.deepEqual(JSON.parse(result.stdout), expected);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.source, "README.md");
+  assert.deepEqual(payload.targets, ["README-jp.md", "README-zh.md"]);
+  assert.equal(payload.summary.checkedTargets, 2);
+  assert.equal(payload.summary.driftReports, 0);
+  assertNonNegativeNumber(payload.summary.totalDurationMs);
+  assert.deepEqual(payload.targetReports.map((report) => ({
+    target: report.target,
+    ok: report.ok,
+  })), [
+    { target: "README-jp.md", ok: true },
+    { target: "README-zh.md", ok: true },
+  ]);
+  for (const report of payload.targetReports) {
+    assertNonNegativeNumber(report.durationMs);
+  }
+  assert.deepEqual(payload.reports, []);
 });
 
 test("CLI prints pretty JSON success report with --json --pretty", async () => {
@@ -483,20 +559,20 @@ test("CLI prints pretty JSON success report with --json --pretty", async () => {
   await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--json", "--pretty"]);
-  const expected = {
-    ok: true,
-    source: "README.md",
-    targets: ["README-jp.md", "README-zh.md"],
-    summary: {
-      checkedTargets: 2,
-      driftReports: 0,
-    },
-    reports: [],
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    summary: { totalDurationMs: unknown };
+    targetReports: Array<{ durationMs: unknown }>;
   };
 
   assert.equal(result.code, 0);
   assert.equal(result.stderr, "");
-  assert.equal(result.stdout, `${JSON.stringify(expected, null, 2)}\n`);
+  assert.match(result.stdout, /\n  "targetReports": \[/);
+  assert.equal(payload.ok, true);
+  assertNonNegativeNumber(payload.summary.totalDurationMs);
+  for (const report of payload.targetReports) {
+    assertNonNegativeNumber(report.durationMs);
+  }
 });
 
 test("CLI prints JSON summary object with --json and --summary", async () => {
@@ -512,6 +588,7 @@ test("CLI prints JSON summary object with --json and --summary", async () => {
     summary: {
       checkedTargets: number;
       driftReports: number;
+      totalDurationMs: unknown;
     };
     reports: Array<{ target: string }>;
   };
@@ -519,10 +596,9 @@ test("CLI prints JSON summary object with --json and --summary", async () => {
   assert.equal(result.code, 1);
   assert.equal(result.stderr, "");
   assert.equal(payload.ok, false);
-  assert.deepEqual(payload.summary, {
-    checkedTargets: 2,
-    driftReports: 1,
-  });
+  assert.equal(payload.summary.checkedTargets, 2);
+  assert.equal(payload.summary.driftReports, 1);
+  assertNonNegativeNumber(payload.summary.totalDurationMs);
   assert.deepEqual(payload.reports.map((report) => report.target), ["README-zh.md"]);
 });
 
