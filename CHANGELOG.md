@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Added optional fail-fast checks through `--fail-fast` and the `failFast` config field.
 - Added `readme-echo check --duplicates` for source and checked-target duplicate heading diagnostics in text and JSON output.
 - Added `readme-echo check --duplicates --source-only` for source-only duplicate heading diagnostics while still checking target drift.
+- Added `readme-echo check --min-depth <n>` for runtime filtering of headings shallower than the requested level before comparison and duplicate diagnostics.
 - Added `readme-echo check --max-depth <n>` for runtime heading-depth filtering before comparison and duplicate diagnostics.
 - Added `readme-echo check --ignore-case` for runtime case-insensitive heading title comparison.
 - Added per-target `targetReports[].durationMs` and summary-level `totalDurationMs` to `readme-echo check --json` output.

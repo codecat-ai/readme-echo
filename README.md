@@ -63,7 +63,7 @@ When files are synchronized, the command exits with code `0`.
 
 When drift is found, it exits with code `1` and reports missing, extra, or reordered headings.
 
-Usage: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
+Usage: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
 
 Usage: `readme-echo version`
 
@@ -93,7 +93,7 @@ Use `readme-echo check --ignore-heading "Changelog"` to ignore one additional ex
 
 Use `readme-echo check --ignore-case` to compare heading titles with JavaScript lowercasing for this run, so titles like `Introduction` and `introduction` are treated as equal. Heading levels, order, missing and extra diagnostics, duplicate diagnostics, and `ignoreHeadings` matching remain unchanged. When `allowLocalizedTitles` is enabled, this flag has no practical effect because title text is already not required to match.
 
-Use `readme-echo check --max-depth 2` to ignore headings deeper than level 2 for this run. The value must be a positive integer. The depth filter applies to both source and target headings before structural comparison and before duplicate diagnostics.
+Use `readme-echo check --min-depth 2` to ignore headings shallower than level 2 for this run, and `readme-echo check --max-depth 2` to ignore headings deeper than level 2. Values must be positive integers, and `--min-depth` cannot be greater than `--max-depth`. Depth filters apply to both source and target headings before structural comparison and before duplicate diagnostics.
 
 Use `readme-echo check --duplicates` to report repeated headings in the source README and each checked target after `ignoreHeadings` filtering. A duplicate is the same heading level and text appearing more than once in the same file. Duplicate reports make `ok` false and exit with code `1`, but `summary.driftReports` remains reserved for cross-file drift. JSON output adds `duplicateReports` with each file path and duplicate `{ level, text, count }` entry.
 

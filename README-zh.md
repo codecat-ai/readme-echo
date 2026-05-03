@@ -63,7 +63,7 @@ readme-echo check
 
 当发现漂移时，命令以退出码 `1` 结束，并报告缺失、多余或顺序变化的标题。
 
-用法：`readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
+用法：`readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
 
 用法：`readme-echo version`
 
@@ -93,7 +93,7 @@ readme-echo check
 
 使用 `readme-echo check --ignore-case` 可在本次运行中用 JavaScript 小写转换来比较标题文本，因此 `Introduction` 和 `introduction` 这样的标题会被视为相同。标题层级、顺序、缺失和多余诊断、重复标题诊断，以及 `ignoreHeadings` 匹配都保持不变。启用 `allowLocalizedTitles` 时，该标志实际上没有影响，因为标题文本本来就不要求匹配。
 
-使用 `readme-echo check --max-depth 2` 可在本次运行中忽略层级深于 2 的标题。该值必须是正整数。深度过滤会在结构比较和重复标题诊断之前，同时应用于源 README 和目标 README 的标题。
+使用 `readme-echo check --min-depth 2` 可在本次运行中忽略层级浅于 2 的标题，使用 `readme-echo check --max-depth 2` 可忽略层级深于 2 的标题。取值必须是正整数，且 `--min-depth` 不能大于 `--max-depth`。深度过滤会在结构比较和重复标题诊断之前，同时应用于源 README 和目标 README 的标题。
 
 使用 `readme-echo check --duplicates` 可在应用 `ignoreHeadings` 过滤后，报告源 README 和每个已检查目标中的重复标题。重复标题指同一文件中相同层级和相同文本的标题出现多次。重复标题报告会让 `ok` 为 false，并以退出码 `1` 结束，但 `summary.driftReports` 仍只表示跨文件漂移。JSON 输出会添加 `duplicateReports`，其中包含每个文件路径以及重复项 `{ level, text, count }`。
 
