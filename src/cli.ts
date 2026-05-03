@@ -133,6 +133,7 @@ type CheckOptions = {
   pretty: boolean;
   quiet: boolean;
   summary: boolean;
+  summaryOnly: boolean;
   failFast: boolean;
   duplicates: boolean;
   sourceOnly: boolean;
@@ -143,7 +144,7 @@ type CheckOptions = {
   maxDepth?: number;
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 const packageJsonPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
@@ -162,6 +163,7 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     pretty: false,
     quiet: false,
     summary: false,
+    summaryOnly: false,
     failFast: false,
     duplicates: false,
     sourceOnly: false,
@@ -182,6 +184,8 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
       parsed.quiet = true;
     } else if (option === "--summary") {
       parsed.summary = true;
+    } else if (option === "--summary-only") {
+      parsed.summaryOnly = true;
     } else if (option === "--fail-fast") {
       parsed.failFast = true;
     } else if (option === "--duplicates") {
@@ -223,6 +227,10 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
   }
 
   if (parsed.noTiming && !parsed.json) {
+    return undefined;
+  }
+
+  if (parsed.summaryOnly && parsed.json) {
     return undefined;
   }
 
@@ -408,13 +416,23 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   }
 
   if (hasDrift || duplicateReports.length > 0) {
+    const summaryReport = formatSummary(checkedTargets.length, comparisonResults.length);
+    if (checkOptions.summaryOnly) {
+      console.log(summaryReport);
+      return 1;
+    }
+
     const textReport = [
       ...reports,
       ...duplicateReports.map((report) => formatDuplicateReport(report)),
     ].join("\n\n");
-    const summaryReport = formatSummary(checkedTargets.length, comparisonResults.length);
     console.log(checkOptions.summary ? `${textReport}\n\n${summaryReport}` : textReport);
     return 1;
+  }
+
+  if (checkOptions.summaryOnly) {
+    console.log(formatSummary(checkedTargets.length, comparisonResults.length));
+    return 0;
   }
 
   if (!checkOptions.quiet) {
