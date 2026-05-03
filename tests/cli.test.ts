@@ -486,6 +486,42 @@ test("CLI check --duplicates respects ignored headings and --target", async () =
   assert.deepEqual(payload.duplicateReports, []);
 });
 
+test("CLI check --ignore-heading can be repeated and feeds the heading filter for comparison behavior", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-ignore-heading-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    targets: ["README-zh.md", "README-jp.md"],
+    ignoreHeadings: ["Configured"],
+  }));
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Configured\n\n## Runtime Only\n\n## Duplicate\n\n## Duplicate\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Configured\n\n## Runtime Only\n\n## Duplicate\n\n## Duplicate\n\n## Usage\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Configured\n\n## Runtime Only\n\n## Duplicate\n\n## Usage\n");
+
+  const result = await runCli(cwd, [
+    "check",
+    "--json",
+    "--duplicates",
+    "--fail-fast",
+    "--ignore-heading",
+    "Runtime Only",
+    "--ignore-heading",
+    "Duplicate",
+  ]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    targets: string[];
+    reports: unknown[];
+    duplicateReports: unknown[];
+  };
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, true);
+  assert.deepEqual(payload.targets, ["README-zh.md", "README-jp.md"]);
+  assert.deepEqual(payload.reports, []);
+  assert.deepEqual(payload.duplicateReports, []);
+});
+
 test("CLI check --duplicates fail-fast reports source duplicates and first failing target", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-duplicates-fail-fast-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
@@ -736,6 +772,17 @@ test("CLI keeps usage errors human-readable when --json is present", async () =>
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
   assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--target <path>\]/);
+});
+
+test("CLI check rejects --ignore-heading without a value", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-ignore-heading-usage-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+
+  const result = await runCli(cwd, ["check", "--ignore-heading"]);
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Usage: readme-echo check .* \[--ignore-heading <text>\]/);
 });
 
 test("CLI check rejects --pretty without --json", async () => {
