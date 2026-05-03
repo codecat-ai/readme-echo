@@ -392,6 +392,50 @@ test("CLI check --json includes per-target and total timing data", async () => {
   }
 });
 
+test("CLI check --json --no-timing omits only JSON timing fields", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-json-no-timing-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+
+  const result = await runCli(cwd, ["check", "--json", "--no-timing"]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    source: string;
+    targets: string[];
+    summary: {
+      checkedTargets: number;
+      driftReports: number;
+      totalDurationMs?: unknown;
+    };
+    targetReports: Array<{
+      target: string;
+      ok: boolean;
+      durationMs?: unknown;
+    }>;
+    reports: Array<{ target: string }>;
+  };
+  const invalidResult = await runCli(cwd, ["check", "--no-timing"]);
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, false);
+  assert.equal(payload.source, "README.md");
+  assert.deepEqual(payload.targets, ["README-jp.md", "README-zh.md"]);
+  assert.equal(payload.summary.checkedTargets, 2);
+  assert.equal(payload.summary.driftReports, 1);
+  assert.equal("totalDurationMs" in payload.summary, false);
+  assert.deepEqual(payload.targetReports, [
+    { target: "README-jp.md", ok: false },
+    { target: "README-zh.md", ok: true },
+  ]);
+  assert.deepEqual(payload.reports.map((report) => report.target), ["README-jp.md"]);
+  assert.equal(invalidResult.code, 1);
+  assert.equal(invalidResult.stdout, "");
+  assert.match(invalidResult.stderr, /Usage: readme-echo check .*--no-timing/);
+});
+
 test("CLI check ignores duplicate headings unless --duplicates is present", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-duplicates-default-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
@@ -525,7 +569,7 @@ test("CLI check --source-only without --duplicates prints usage", async () => {
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--target <path>\]/);
 });
 
 test("CLI check --duplicates --source-only prints only source duplicate reports", async () => {
@@ -939,7 +983,7 @@ test("CLI keeps usage errors human-readable when --json is present", async () =>
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--target <path>\]/);
 });
 
 test("CLI check rejects --ignore-heading without a value", async () => {
@@ -961,7 +1005,7 @@ test("CLI check rejects --pretty without --json", async () => {
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--target <path>\]/);
 });
 
 test("CLI exits 1 and prints drift when mismatch exists", async () => {

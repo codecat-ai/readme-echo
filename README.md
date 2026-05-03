@@ -63,7 +63,7 @@ When files are synchronized, the command exits with code `0`.
 
 When drift is found, it exits with code `1` and reports missing, extra, or reordered headings.
 
-Usage: `readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
+Usage: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
 
 Usage: `readme-echo version`
 
@@ -73,7 +73,7 @@ Use `readme-echo version` or `readme-echo --version` to print the package versio
 
 Use `readme-echo check --summary` to print a concise final line such as `Checked 2 target README file(s): 1 drift report(s).`
 
-Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, `summary`, `targetReports`, and `reports`; `summary` includes `checkedTargets`, `driftReports`, and `totalDurationMs`. Each `targetReports` entry includes the target path, target-level `ok` status, and non-negative `durationMs`. Drifting reports include the target path and structured heading differences. When fail-fast stops early, `targets`, `summary`, `targetReports`, and `reports` reflect only the targets that were checked.
+Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, `summary`, `targetReports`, and `reports`; `summary` includes `checkedTargets`, `driftReports`, and `totalDurationMs`. Each `targetReports` entry includes the target path, target-level `ok` status, and non-negative `durationMs`. Add `--no-timing` with `--json` to omit `summary.totalDurationMs` and every `targetReports[].durationMs` while preserving the rest of the JSON shape and exit-code behavior for deterministic snapshots. Drifting reports include the target path and structured heading differences. When fail-fast stops early, `targets`, `summary`, `targetReports`, and `reports` reflect only the targets that were checked.
 
 For `check` and `list-targets`, add `--pretty` with `--json` to format JSON output with two-space indentation, for example `readme-echo check --json --pretty` or `readme-echo list-targets --json --pretty`. Without `--pretty`, those JSON outputs stay compact.
 

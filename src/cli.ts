@@ -41,6 +41,14 @@ type TargetReport = {
   durationMs: number;
 };
 
+type JsonTargetReport = TargetReport | Omit<TargetReport, "durationMs">;
+
+type JsonReportOptions = {
+  duplicateReports?: DuplicateReport[];
+  missingTargets?: string[];
+  includeTiming?: boolean;
+};
+
 function elapsedMsSince(startTime: number): number {
   return Math.max(0, performance.now() - startTime);
 }
@@ -81,19 +89,27 @@ function formatJsonReport(
   results: ComparisonResult[],
   targetReports: TargetReport[],
   totalDurationMs: number,
-  duplicateReports?: DuplicateReport[],
-  missingTargets?: string[],
+  options: JsonReportOptions = {},
 ) {
+  const {
+    duplicateReports,
+    missingTargets,
+    includeTiming = true,
+  } = options;
+  const summary = {
+    checkedTargets: targets.length,
+    driftReports: results.length,
+    ...(includeTiming ? { totalDurationMs } : {}),
+  };
+  const jsonTargetReports: JsonTargetReport[] = includeTiming
+    ? targetReports
+    : targetReports.map(({ target, ok }) => ({ target, ok }));
   const payload = {
     ok: results.length === 0 && (!duplicateReports || duplicateReports.length === 0) && (!missingTargets || missingTargets.length === 0),
     source,
     targets,
-    summary: {
-      checkedTargets: targets.length,
-      driftReports: results.length,
-      totalDurationMs,
-    },
-    targetReports,
+    summary,
+    targetReports: jsonTargetReports,
     reports: results.map((result) => ({
       target: result.targetPath,
       differences: result.differences.map(({ type, source, target }) => ({
@@ -121,12 +137,13 @@ type CheckOptions = {
   duplicates: boolean;
   sourceOnly: boolean;
   strictTargets: boolean;
+  noTiming: boolean;
   targets: string[];
   ignoreHeadings: string[];
   maxDepth?: number;
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 const packageJsonPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
@@ -149,6 +166,7 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     duplicates: false,
     sourceOnly: false,
     strictTargets: false,
+    noTiming: false,
     targets: [],
     ignoreHeadings: [],
   };
@@ -172,6 +190,8 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
       parsed.sourceOnly = true;
     } else if (option === "--strict-targets") {
       parsed.strictTargets = true;
+    } else if (option === "--no-timing") {
+      parsed.noTiming = true;
     } else if (option === "--target") {
       const target = options[index + 1];
       if (!target || target.startsWith("--")) {
@@ -199,6 +219,10 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
   }
 
   if (parsed.pretty && !parsed.json) {
+    return undefined;
+  }
+
+  if (parsed.noTiming && !parsed.json) {
     return undefined;
   }
 
@@ -303,8 +327,11 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
             [],
             [],
             elapsedMsSince(checkStartTime),
-            checkOptions.duplicates ? [] : undefined,
-            missingTargets,
+            {
+              duplicateReports: checkOptions.duplicates ? [] : undefined,
+              missingTargets,
+              includeTiming: !checkOptions.noTiming,
+            },
           ),
           checkOptions.pretty,
         ));
@@ -370,7 +397,10 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
         comparisonResults,
         targetReports,
         elapsedMsSince(checkStartTime),
-        checkOptions.duplicates ? duplicateReports : undefined,
+        {
+          duplicateReports: checkOptions.duplicates ? duplicateReports : undefined,
+          includeTiming: !checkOptions.noTiming,
+        },
       ),
       checkOptions.pretty,
     ));
