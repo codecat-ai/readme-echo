@@ -697,7 +697,7 @@ test("CLI check --source-only without --duplicates prints usage", async () => {
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--ignore-case\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--ignore-case\] \[--exit-zero\] \[--target <path>\]/);
 });
 
 test("CLI check --duplicates --source-only prints only source duplicate reports", async () => {
@@ -883,6 +883,83 @@ test("CLI check --duplicates fail-fast reports source duplicates and first faili
   assert.equal(result.stderr, "");
   assert.deepEqual(payload.targets, ["README-zh.md"]);
   assert.deepEqual(payload.duplicateReports.map((report) => report.path), ["README.md", "README-zh.md"]);
+});
+
+test("CLI check --exit-zero exits 0 for drift while still printing drift details", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-exit-zero-drift-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
+
+  const strictResult = await runCli(cwd);
+  const advisoryResult = await runCli(cwd, ["check", "--exit-zero"]);
+
+  assert.equal(strictResult.code, 1);
+  assert.match(strictResult.stdout, /README-zh\.md/);
+  assert.match(strictResult.stdout, /Missing/);
+  assert.equal(strictResult.stderr, "");
+  assert.equal(advisoryResult.code, 0);
+  assert.match(advisoryResult.stdout, /README-zh\.md/);
+  assert.match(advisoryResult.stdout, /Missing/);
+  assert.equal(advisoryResult.stderr, "");
+});
+
+test("CLI check --json --exit-zero exits 0 while JSON ok remains false for drift", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-exit-zero-json-drift-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
+
+  const result = await runCli(cwd, ["check", "--json", "--exit-zero"]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    reports: Array<{ target: string }>;
+  };
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, false);
+  assert.deepEqual(payload.reports.map((report) => report.target), ["README-zh.md"]);
+});
+
+test("CLI check --strict-targets --exit-zero exits 0 while still reporting missing targets", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-exit-zero-strict-targets-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    targets: ["README-zh.md"],
+  }));
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--strict-targets", "--exit-zero"]);
+
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Missing target README file: README-zh\.md/);
+  assert.equal(result.stderr, "");
+});
+
+test("CLI check --duplicates --exit-zero exits 0 while still reporting duplicate headings", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-exit-zero-duplicates-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Install\n");
+  await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Install\n");
+
+  const result = await runCli(cwd, ["check", "--duplicates", "--exit-zero"]);
+
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Duplicate headings in README\.md:/);
+  assert.match(result.stdout, /Duplicate headings in README-zh\.md:/);
+  assert.equal(result.stderr, "");
+});
+
+test("CLI check invalid option with --exit-zero still exits 1", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-exit-zero-usage-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+
+  const result = await runCli(cwd, ["check", "--exit-zero", "--unknown"]);
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Usage: readme-echo check .* \[--exit-zero\]/);
 });
 
 test("CLI prints JSON success report with --json", async () => {
@@ -1111,7 +1188,7 @@ test("CLI keeps usage errors human-readable when --json is present", async () =>
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--ignore-case\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--ignore-case\] \[--exit-zero\] \[--target <path>\]/);
 });
 
 test("CLI check rejects --ignore-heading without a value", async () => {
@@ -1133,7 +1210,7 @@ test("CLI check rejects --pretty without --json", async () => {
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--ignore-case\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--ignore-case\] \[--exit-zero\] \[--target <path>\]/);
 });
 
 test("CLI exits 1 and prints drift when mismatch exists", async () => {

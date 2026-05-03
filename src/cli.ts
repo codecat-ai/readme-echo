@@ -139,13 +139,14 @@ type CheckOptions = {
   sourceOnly: boolean;
   strictTargets: boolean;
   ignoreCase: boolean;
+  exitZero: boolean;
   noTiming: boolean;
   targets: string[];
   ignoreHeadings: string[];
   maxDepth?: number;
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 const packageJsonPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
@@ -170,6 +171,7 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     sourceOnly: false,
     strictTargets: false,
     ignoreCase: false,
+    exitZero: false,
     noTiming: false,
     targets: [],
     ignoreHeadings: [],
@@ -198,6 +200,8 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
       parsed.strictTargets = true;
     } else if (option === "--ignore-case") {
       parsed.ignoreCase = true;
+    } else if (option === "--exit-zero") {
+      parsed.exitZero = true;
     } else if (option === "--no-timing") {
       parsed.noTiming = true;
     } else if (option === "--target") {
@@ -350,7 +354,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
       } else {
         console.log(formatMissingTargetReport(missingTargets));
       }
-      return 1;
+      return checkOptions.exitZero ? 0 : 1;
     }
   }
 
@@ -417,14 +421,14 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
       ),
       checkOptions.pretty,
     ));
-    return hasDrift || duplicateReports.length > 0 ? 1 : 0;
+    return hasDrift || duplicateReports.length > 0 ? (checkOptions.exitZero ? 0 : 1) : 0;
   }
 
   if (hasDrift || duplicateReports.length > 0) {
     const summaryReport = formatSummary(checkedTargets.length, comparisonResults.length);
     if (checkOptions.summaryOnly) {
       console.log(summaryReport);
-      return 1;
+      return checkOptions.exitZero ? 0 : 1;
     }
 
     const textReport = [
@@ -432,7 +436,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
       ...duplicateReports.map((report) => formatDuplicateReport(report)),
     ].join("\n\n");
     console.log(checkOptions.summary ? `${textReport}\n\n${summaryReport}` : textReport);
-    return 1;
+    return checkOptions.exitZero ? 0 : 1;
   }
 
   if (checkOptions.summaryOnly) {
