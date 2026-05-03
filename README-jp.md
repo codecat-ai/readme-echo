@@ -67,7 +67,7 @@ readme-echo check
 
 `readme-echo check --summary` を使うと、`Checked 2 target README file(s): 1 drift report(s).` のような簡潔な最終サマリー行を出力できます。
 
-`readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`summary`、`reports` を含む JSON オブジェクトを出力し、`summary` には `checkedTargets` と `driftReports` が含まれます。差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。fail-fast が途中で停止した場合、`targets`、`summary`、`reports` には確認済みのターゲットだけが反映されます。
+`readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`summary`、`targetReports`、`reports` を含む JSON オブジェクトを出力し、`summary` には `checkedTargets`、`driftReports`、`totalDurationMs` が含まれます。各 `targetReports` エントリには、ターゲットパス、ターゲット単位の `ok` 状態、非負の `durationMs` が含まれます。差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。fail-fast が途中で停止した場合、`targets`、`summary`、`targetReports`、`reports` には確認済みのターゲットだけが反映されます。
 
 `check` と `list-targets` では、`--pretty` を `--json` と一緒に使うと、JSON 出力を 2 スペースのインデントで整形できます。たとえば `readme-echo check --json --pretty` や `readme-echo list-targets --json --pretty` です。`--pretty` を使わない場合、これらの JSON 出力はコンパクトなままです。
 
@@ -128,7 +128,6 @@ npm test
 
 ## ロードマップ
 
-- JSON 出力にターゲットごとの所要時間を追加する。
 - 署名付きパッケージリリースを公開する。
 
 ## コントリビュート

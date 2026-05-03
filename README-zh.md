@@ -67,7 +67,7 @@ readme-echo check
 
 使用 `readme-echo check --summary` 可打印简洁的最终摘要行，例如 `Checked 2 target README file(s): 1 drift report(s).`
 
-使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets`、`summary` 和 `reports` 的 JSON 对象；`summary` 包含 `checkedTargets` 和 `driftReports`。存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets`、`summary` 和 `reports` 只反映已经检查过的目标。
+使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets`、`summary`、`targetReports` 和 `reports` 的 JSON 对象；`summary` 包含 `checkedTargets`、`driftReports` 和 `totalDurationMs`。每个 `targetReports` 条目都包含目标路径、目标级别的 `ok` 状态，以及非负的 `durationMs`。存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets`、`summary`、`targetReports` 和 `reports` 只反映已经检查过的目标。
 
 对于 `check` 和 `list-targets`，将 `--pretty` 与 `--json` 一起使用，可用两个空格缩进格式化 JSON 输出，例如 `readme-echo check --json --pretty` 或 `readme-echo list-targets --json --pretty`。不使用 `--pretty` 时，这些 JSON 输出保持紧凑格式。
 
@@ -128,7 +128,6 @@ npm test
 
 ## 路线图
 
-- 在 JSON 输出中添加每个目标的耗时。
 - 发布带签名的软件包版本。
 
 ## 贡献

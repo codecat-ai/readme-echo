@@ -2,6 +2,7 @@
 
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { performance } from "node:perf_hooks";
 
 import { compareHeadings, formatComparisonReport, type ComparisonResult } from "./compare.ts";
 import { loadConfig } from "./config.ts";
@@ -26,6 +27,16 @@ type DuplicateReport = {
   path: string;
   duplicates: DuplicateHeading[];
 };
+
+type TargetReport = {
+  target: string;
+  ok: boolean;
+  durationMs: number;
+};
+
+function elapsedMsSince(startTime: number): number {
+  return Math.max(0, performance.now() - startTime);
+}
 
 function detectDuplicateHeadings(path: string, headings: Heading[]): DuplicateReport | undefined {
   const counts = new Map<string, DuplicateHeading>();
@@ -61,6 +72,8 @@ function formatJsonReport(
   source: string,
   targets: string[],
   results: ComparisonResult[],
+  targetReports: TargetReport[],
+  totalDurationMs: number,
   duplicateReports?: DuplicateReport[],
 ) {
   const payload = {
@@ -70,7 +83,9 @@ function formatJsonReport(
     summary: {
       checkedTargets: targets.length,
       driftReports: results.length,
+      totalDurationMs,
     },
+    targetReports,
     reports: results.map((result) => ({
       target: result.targetPath,
       differences: result.differences.map(({ type, source, target }) => ({
@@ -206,8 +221,10 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const config = await loadConfig(cwd);
   const failFast = checkOptions.failFast || config.failFast;
   const targets = checkOptions.targets.length > 0 ? checkOptions.targets : config.targets;
+  const checkStartTime = performance.now();
   const sourceHeadings = await readHeadings(cwd, config.source, config.ignoreHeadings);
   const checkedTargets: string[] = [];
+  const targetReports: TargetReport[] = [];
   const reports: string[] = [];
   const comparisonResults: ComparisonResult[] = [];
   const duplicateReports: DuplicateReport[] = [];
@@ -221,6 +238,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   }
 
   for (const target of targets) {
+    const targetStartTime = performance.now();
     checkedTargets.push(target);
     const targetHeadings = await readHeadings(cwd, target, config.ignoreHeadings);
     const targetDuplicateReport = checkOptions.duplicates && !checkOptions.sourceOnly
@@ -228,6 +246,12 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
       : undefined;
     const result = compareHeadings(config.source, target, sourceHeadings, targetHeadings, {
       allowLocalizedTitles: config.allowLocalizedTitles,
+    });
+
+    targetReports.push({
+      target,
+      ok: result.ok && !targetDuplicateReport,
+      durationMs: elapsedMsSince(targetStartTime),
     });
 
     if (targetDuplicateReport) {
@@ -251,6 +275,8 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
         config.source,
         checkedTargets,
         comparisonResults,
+        targetReports,
+        elapsedMsSince(checkStartTime),
         checkOptions.duplicates ? duplicateReports : undefined,
       ),
       checkOptions.pretty,
