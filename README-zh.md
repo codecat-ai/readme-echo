@@ -63,7 +63,7 @@ readme-echo check
 
 当发现漂移时，命令以退出码 `1` 结束，并报告缺失、多余或顺序变化的标题。
 
-用法：`readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>]`
+用法：`readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
 
 用法：`readme-echo version`
 
@@ -86,6 +86,8 @@ readme-echo check
 使用 `readme-echo check --strict-targets` 可要求每个已配置或已选择的目标 README 路径在比较前都存在且可读。缺失目标会让命令以退出码 `1` 结束；文本输出会列出每个缺失目标，JSON 输出会将 `ok` 设为 `false`，并在 `missingTargets` 中列出它们。
 
 使用 `readme-echo check --ignore-heading "Changelog"` 可在本次运行中额外忽略一个精确标题文本。重复使用 `--ignore-heading` 可添加多个运行时忽略项；它们会追加到 `.readme-echo.json` 的 `ignoreHeadings`。
+
+使用 `readme-echo check --max-depth 2` 可在本次运行中忽略层级深于 2 的标题。该值必须是正整数。深度过滤会在结构比较和重复标题诊断之前，同时应用于源 README 和目标 README 的标题。
 
 使用 `readme-echo check --duplicates` 可在应用 `ignoreHeadings` 过滤后，报告源 README 和每个已检查目标中的重复标题。重复标题指同一文件中相同层级和相同文本的标题出现多次。重复标题报告会让 `ok` 为 false，并以退出码 `1` 结束，但 `summary.driftReports` 仍只表示跨文件漂移。JSON 输出会添加 `duplicateReports`，其中包含每个文件路径以及重复项 `{ level, text, count }`。
 

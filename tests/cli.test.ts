@@ -569,6 +569,91 @@ test("CLI check --duplicates respects ignored headings and --target", async () =
   assert.deepEqual(payload.duplicateReports, []);
 });
 
+test("CLI check --max-depth filters source and target headings before comparison and duplicate diagnostics", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-max-depth-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
+    targets: ["README-zh.md", "README-jp.md"],
+    ignoreHeadings: ["Ignored"],
+  }));
+  await writeFile(join(cwd, "README.md"), [
+    "# Project",
+    "",
+    "## Install",
+    "",
+    "### Ignored",
+    "",
+    "### Source Detail",
+    "",
+    "### Source Detail",
+    "",
+    "## Usage",
+    "",
+  ].join("\n"));
+  await writeFile(join(cwd, "README-zh.md"), [
+    "# Project",
+    "",
+    "## Install",
+    "",
+    "### Target Detail",
+    "",
+    "### Target Detail",
+    "",
+    "## Usage",
+    "",
+  ].join("\n"));
+  await writeFile(join(cwd, "README-jp.md"), [
+    "# Project",
+    "",
+    "## Install",
+    "",
+    "### Target Detail",
+    "",
+    "## Usage",
+    "",
+  ].join("\n"));
+
+  const result = await runCli(cwd, [
+    "check",
+    "--max-depth",
+    "2",
+    "--duplicates",
+    "--target",
+    "README-zh.md",
+    "--json",
+  ]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    targets: string[];
+    reports: unknown[];
+    duplicateReports: unknown[];
+    summary: { checkedTargets: number; driftReports: number };
+  };
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, true);
+  assert.deepEqual(payload.targets, ["README-zh.md"]);
+  assert.equal(payload.summary.checkedTargets, 1);
+  assert.equal(payload.summary.driftReports, 0);
+  assert.deepEqual(payload.reports, []);
+  assert.deepEqual(payload.duplicateReports, []);
+});
+
+test("CLI check rejects missing and invalid --max-depth values with usage", async () => {
+  for (const value of [undefined, "0", "-1", "1.5", "abc"]) {
+    const cwd = join(tmpdir(), `readme-echo-cli-max-depth-usage-${value ?? "missing"}-${Date.now()}`);
+    await mkdir(cwd, { recursive: true });
+
+    const argv = value === undefined ? ["check", "--max-depth"] : ["check", "--max-depth", value];
+    const result = await runCli(cwd, argv);
+
+    assert.equal(result.code, 1);
+    assert.equal(result.stdout, "");
+    assert.match(result.stderr, /Usage: readme-echo check .* \[--max-depth <n>\]/);
+  }
+});
+
 test("CLI check --ignore-heading can be repeated and feeds the heading filter for comparison behavior", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-ignore-heading-${Date.now()}`);
   await mkdir(cwd, { recursive: true });

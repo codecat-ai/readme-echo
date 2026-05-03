@@ -10,9 +10,10 @@ import { compareHeadings, formatComparisonReport, type ComparisonResult } from "
 import { loadConfig } from "./config.ts";
 import { filterIgnoredHeadings, parseHeadings, type Heading } from "./markdown.ts";
 
-async function readHeadings(cwd: string, path: string, ignoredTexts: string[]) {
+async function readHeadings(cwd: string, path: string, ignoredTexts: string[], maxDepth?: number) {
   const content = await readFile(join(cwd, path), "utf8");
-  return filterIgnoredHeadings(parseHeadings(content), ignoredTexts);
+  const headings = filterIgnoredHeadings(parseHeadings(content), ignoredTexts);
+  return maxDepth === undefined ? headings : headings.filter((heading) => heading.level <= maxDepth);
 }
 
 function formatSummary(checkedTargets: number, driftReports: number): string {
@@ -122,9 +123,10 @@ type CheckOptions = {
   strictTargets: boolean;
   targets: string[];
   ignoreHeadings: string[];
+  maxDepth?: number;
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 const packageJsonPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
@@ -183,6 +185,13 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
         return undefined;
       }
       parsed.ignoreHeadings.push(heading);
+      index += 1;
+    } else if (option === "--max-depth") {
+      const maxDepth = options[index + 1];
+      if (!maxDepth || !/^[1-9]\d*$/.test(maxDepth)) {
+        return undefined;
+      }
+      parsed.maxDepth = Number(maxDepth);
       index += 1;
     } else {
       return undefined;
@@ -306,7 +315,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
     }
   }
 
-  const sourceHeadings = await readHeadings(cwd, config.source, ignoreHeadings);
+  const sourceHeadings = await readHeadings(cwd, config.source, ignoreHeadings, checkOptions.maxDepth);
   const checkedTargets: string[] = [];
   const targetReports: TargetReport[] = [];
   const reports: string[] = [];
@@ -324,7 +333,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   for (const target of targets) {
     const targetStartTime = performance.now();
     checkedTargets.push(target);
-    const targetHeadings = await readHeadings(cwd, target, ignoreHeadings);
+    const targetHeadings = await readHeadings(cwd, target, ignoreHeadings, checkOptions.maxDepth);
     const targetDuplicateReport = checkOptions.duplicates && !checkOptions.sourceOnly
       ? detectDuplicateHeadings(target, targetHeadings)
       : undefined;
