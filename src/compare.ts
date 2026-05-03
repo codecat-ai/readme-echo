@@ -11,6 +11,7 @@ export type HeadingDifference = {
 
 export type CompareOptions = {
   allowLocalizedTitles: boolean;
+  ignoreCase?: boolean;
 };
 
 export type ComparisonResult = {
@@ -20,8 +21,13 @@ export type ComparisonResult = {
   differences: HeadingDifference[];
 };
 
-function keyFor(heading: Heading, allowLocalizedTitles: boolean): string {
-  return allowLocalizedTitles ? String(heading.level) : `${heading.level}:${heading.text}`;
+function keyFor(heading: Heading, options: CompareOptions): string {
+  if (options.allowLocalizedTitles) {
+    return String(heading.level);
+  }
+
+  const text = options.ignoreCase ? heading.text.toLowerCase() : heading.text;
+  return `${heading.level}:${text}`;
 }
 
 function describeHeading(heading: Heading): string {
@@ -55,8 +61,8 @@ export function compareHeadings(
   targetHeadings: Heading[],
   options: CompareOptions,
 ): ComparisonResult {
-  const sourceKeys = sourceHeadings.map((heading) => keyFor(heading, options.allowLocalizedTitles));
-  const targetKeys = targetHeadings.map((heading) => keyFor(heading, options.allowLocalizedTitles));
+  const sourceKeys = sourceHeadings.map((heading) => keyFor(heading, options));
+  const targetKeys = targetHeadings.map((heading) => keyFor(heading, options));
   const differences: HeadingDifference[] = [];
 
   if (
@@ -75,7 +81,7 @@ export function compareHeadings(
     }
 
     for (const heading of sourceHeadings) {
-      const key = keyFor(heading, options.allowLocalizedTitles);
+      const key = keyFor(heading, options);
       const count = targetCounts.get(key) ?? 0;
       if (count > 0) {
         targetCounts.set(key, count - 1);
@@ -94,7 +100,7 @@ export function compareHeadings(
     }
 
     for (const heading of targetHeadings) {
-      const key = keyFor(heading, options.allowLocalizedTitles);
+      const key = keyFor(heading, options);
       const count = sourceCounts.get(key) ?? 0;
       if (count > 0) {
         sourceCounts.set(key, count - 1);

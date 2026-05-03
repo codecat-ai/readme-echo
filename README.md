@@ -63,7 +63,7 @@ When files are synchronized, the command exits with code `0`.
 
 When drift is found, it exits with code `1` and reports missing, extra, or reordered headings.
 
-Usage: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
+Usage: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
 
 Usage: `readme-echo version`
 
@@ -88,6 +88,8 @@ Use `readme-echo check --target README-zh.md` to check only one configured or di
 Use `readme-echo check --strict-targets` to require every configured or selected target README path to exist and be readable before comparison. Missing targets make the command exit with code `1`, text output names each missing target, and JSON output sets `ok` to `false` and lists them in `missingTargets`.
 
 Use `readme-echo check --ignore-heading "Changelog"` to ignore one additional exact heading text for this run. Repeat `--ignore-heading` to add multiple runtime ignores; they are applied in addition to `.readme-echo.json` `ignoreHeadings`.
+
+Use `readme-echo check --ignore-case` to compare heading titles with JavaScript lowercasing for this run, so titles like `Introduction` and `introduction` are treated as equal. Heading levels, order, missing and extra diagnostics, duplicate diagnostics, and `ignoreHeadings` matching remain unchanged. When `allowLocalizedTitles` is enabled, this flag has no practical effect because title text is already not required to match.
 
 Use `readme-echo check --max-depth 2` to ignore headings deeper than level 2 for this run. The value must be a positive integer. The depth filter applies to both source and target headings before structural comparison and before duplicate diagnostics.
 

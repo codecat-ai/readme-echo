@@ -138,13 +138,14 @@ type CheckOptions = {
   duplicates: boolean;
   sourceOnly: boolean;
   strictTargets: boolean;
+  ignoreCase: boolean;
   noTiming: boolean;
   targets: string[];
   ignoreHeadings: string[];
   maxDepth?: number;
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 const packageJsonPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
@@ -168,6 +169,7 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     duplicates: false,
     sourceOnly: false,
     strictTargets: false,
+    ignoreCase: false,
     noTiming: false,
     targets: [],
     ignoreHeadings: [],
@@ -194,6 +196,8 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
       parsed.sourceOnly = true;
     } else if (option === "--strict-targets") {
       parsed.strictTargets = true;
+    } else if (option === "--ignore-case") {
+      parsed.ignoreCase = true;
     } else if (option === "--no-timing") {
       parsed.noTiming = true;
     } else if (option === "--target") {
@@ -374,6 +378,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
       : undefined;
     const result = compareHeadings(config.source, target, sourceHeadings, targetHeadings, {
       allowLocalizedTitles: config.allowLocalizedTitles,
+      ignoreCase: checkOptions.ignoreCase,
     });
 
     targetReports.push({
