@@ -63,7 +63,7 @@ readme-echo check
 
 当发现漂移时，命令以退出码 `1` 结束，并报告缺失、多余或顺序变化的标题。
 
-用法：`readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
+用法：`readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
 
 用法：`readme-echo version`
 
@@ -88,6 +88,8 @@ readme-echo check
 使用 `readme-echo check --strict-targets` 可要求每个已配置或已选择的目标 README 路径在比较前都存在且可读。缺失目标会让命令以退出码 `1` 结束；文本输出会列出每个缺失目标，JSON 输出会将 `ok` 设为 `false`，并在 `missingTargets` 中列出它们。
 
 使用 `readme-echo check --ignore-heading "Changelog"` 可在本次运行中额外忽略一个精确标题文本。重复使用 `--ignore-heading` 可添加多个运行时忽略项；它们会追加到 `.readme-echo.json` 的 `ignoreHeadings`。
+
+使用 `readme-echo check --ignore-case` 可在本次运行中用 JavaScript 小写转换来比较标题文本，因此 `Introduction` 和 `introduction` 这样的标题会被视为相同。标题层级、顺序、缺失和多余诊断、重复标题诊断，以及 `ignoreHeadings` 匹配都保持不变。启用 `allowLocalizedTitles` 时，该标志实际上没有影响，因为标题文本本来就不要求匹配。
 
 使用 `readme-echo check --max-depth 2` 可在本次运行中忽略层级深于 2 的标题。该值必须是正整数。深度过滤会在结构比较和重复标题诊断之前，同时应用于源 README 和目标 README 的标题。
 
