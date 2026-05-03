@@ -65,6 +65,12 @@ readme-echo check
 
 用法：`readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>]`
 
+用法：`readme-echo version`
+
+用法：`readme-echo --version`
+
+使用 `readme-echo version` 或 `readme-echo --version` 可打印软件包版本，并在末尾带一个换行符。
+
 使用 `readme-echo check --summary` 可打印简洁的最终摘要行，例如 `Checked 2 target README file(s): 1 drift report(s).`
 
 使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets`、`summary`、`targetReports` 和 `reports` 的 JSON 对象；`summary` 包含 `checkedTargets`、`driftReports` 和 `totalDurationMs`。每个 `targetReports` 条目都包含目标路径、目标级别的 `ok` 状态，以及非负的 `durationMs`。存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets`、`summary`、`targetReports` 和 `reports` 只反映已经检查过的目标。

@@ -2,8 +2,9 @@
 
 import { access, readFile } from "node:fs/promises";
 import { constants } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { performance } from "node:perf_hooks";
+import { fileURLToPath } from "node:url";
 
 import { compareHeadings, formatComparisonReport, type ComparisonResult } from "./compare.ts";
 import { loadConfig } from "./config.ts";
@@ -126,6 +127,15 @@ type CheckOptions = {
 const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
+const packageJsonPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
+
+async function readPackageVersion(): Promise<string> {
+  const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8")) as { version?: unknown };
+  if (typeof packageJson.version !== "string") {
+    throw new Error("package.json version must be a string");
+  }
+  return packageJson.version;
+}
 
 function parseCheckOptions(options: string[]): CheckOptions | undefined {
   const parsed: CheckOptions = {
@@ -218,6 +228,11 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const command = argv[0] ?? "check";
   const options = argv.slice(1);
   const json = options.includes("--json");
+
+  if ((command === "version" || command === "--version") && options.length === 0) {
+    console.log(await readPackageVersion());
+    return 0;
+  }
 
   if (command === "list-targets") {
     const pretty = options.includes("--pretty");

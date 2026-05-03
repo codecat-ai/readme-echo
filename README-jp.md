@@ -65,6 +65,12 @@ readme-echo check
 
 使い方: `readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>]`
 
+使い方: `readme-echo version`
+
+使い方: `readme-echo --version`
+
+`readme-echo version` または `readme-echo --version` を使うと、パッケージバージョンを末尾の改行付きで出力できます。
+
 `readme-echo check --summary` を使うと、`Checked 2 target README file(s): 1 drift report(s).` のような簡潔な最終サマリー行を出力できます。
 
 `readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`summary`、`targetReports`、`reports` を含む JSON オブジェクトを出力し、`summary` には `checkedTargets`、`driftReports`、`totalDurationMs` が含まれます。各 `targetReports` エントリには、ターゲットパス、ターゲット単位の `ok` 状態、非負の `durationMs` が含まれます。差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。fail-fast が途中で停止した場合、`targets`、`summary`、`targetReports`、`reports` には確認済みのターゲットだけが反映されます。
