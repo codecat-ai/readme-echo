@@ -63,7 +63,7 @@ When files are synchronized, the command exits with code `0`.
 
 When drift is found, it exits with code `1` and reports missing, extra, or reordered headings.
 
-Usage: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
+Usage: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--max-depth <n>]`
 
 Usage: `readme-echo version`
 
@@ -76,6 +76,8 @@ Use `readme-echo check --summary` to print a concise final line such as `Checked
 Use `readme-echo check --summary-only` to print only that summary line in text output. It exits with the same success or failure status as a normal check, omits `All README files are synchronized.` on success, and suppresses detailed drift or duplicate-heading reports on failure. It cannot be combined with `--json`.
 
 Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, `summary`, `targetReports`, and `reports`; `summary` includes `checkedTargets`, `driftReports`, and `totalDurationMs`. Each `targetReports` entry includes the target path, target-level `ok` status, and non-negative `durationMs`. Add `--no-timing` with `--json` to omit `summary.totalDurationMs` and every `targetReports[].durationMs` while preserving the rest of the JSON shape and exit-code behavior for deterministic snapshots. Drifting reports include the target path and structured heading differences. When fail-fast stops early, `targets`, `summary`, `targetReports`, and `reports` reflect only the targets that were checked.
+
+Use `readme-echo check --exit-zero` for advisory local audits or non-blocking CI jobs. It still performs every requested check and prints the same text or JSON diagnostics, but drift, duplicate heading reports, and strict missing target reports return exit code `0`. JSON `ok` remains `false` when diagnostics fail. Usage errors and invalid options still return exit code `1`, and this option applies only to `check`.
 
 For `check` and `list-targets`, add `--pretty` with `--json` to format JSON output with two-space indentation, for example `readme-echo check --json --pretty` or `readme-echo list-targets --json --pretty`. Without `--pretty`, those JSON outputs stay compact.
 

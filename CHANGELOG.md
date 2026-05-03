@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Added `readme-echo check --ignore-case` for runtime case-insensitive heading title comparison.
 - Added per-target `targetReports[].durationMs` and summary-level `totalDurationMs` to `readme-echo check --json` output.
 - Added `readme-echo check --json --no-timing` to omit JSON timing fields for deterministic snapshots while preserving other fields and exit codes.
+- Added `readme-echo check --exit-zero` for advisory drift, duplicate heading, and strict missing target diagnostics that keep exit code `0`.
 - Updated JSON output so fail-fast reports include only checked targets when checking stops early.
 
 ## 0.1.0
