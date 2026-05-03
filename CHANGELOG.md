@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Added `readme-echo check --duplicates --source-only` for source-only duplicate heading diagnostics while still checking target drift.
 - Added `readme-echo check --max-depth <n>` for runtime heading-depth filtering before comparison and duplicate diagnostics.
 - Added per-target `targetReports[].durationMs` and summary-level `totalDurationMs` to `readme-echo check --json` output.
+- Added `readme-echo check --json --no-timing` to omit JSON timing fields for deterministic snapshots while preserving other fields and exit codes.
 - Updated JSON output so fail-fast reports include only checked targets when checking stops early.
 
 ## 0.1.0
