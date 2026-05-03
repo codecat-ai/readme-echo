@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
+import { constants } from "node:fs";
 import { join } from "node:path";
 import { performance } from "node:perf_hooks";
 
@@ -15,6 +16,10 @@ async function readHeadings(cwd: string, path: string, ignoredTexts: string[]) {
 
 function formatSummary(checkedTargets: number, driftReports: number): string {
   return `Checked ${checkedTargets} target README file(s): ${driftReports} drift report(s).`;
+}
+
+function formatMissingTargetReport(targets: string[]): string {
+  return targets.map((target) => `Missing target README file: ${target}`).join("\n");
 }
 
 type DuplicateHeading = {
@@ -75,9 +80,10 @@ function formatJsonReport(
   targetReports: TargetReport[],
   totalDurationMs: number,
   duplicateReports?: DuplicateReport[],
+  missingTargets?: string[],
 ) {
   const payload = {
-    ok: results.length === 0 && (!duplicateReports || duplicateReports.length === 0),
+    ok: results.length === 0 && (!duplicateReports || duplicateReports.length === 0) && (!missingTargets || missingTargets.length === 0),
     source,
     targets,
     summary: {
@@ -95,8 +101,9 @@ function formatJsonReport(
       })),
     })),
   };
+  const payloadWithMissingTargets = missingTargets ? { ...payload, missingTargets } : payload;
 
-  return duplicateReports ? { ...payload, duplicateReports } : payload;
+  return duplicateReports ? { ...payloadWithMissingTargets, duplicateReports } : payloadWithMissingTargets;
 }
 
 function stringifyJson(value: unknown, pretty: boolean): string {
@@ -111,11 +118,12 @@ type CheckOptions = {
   failFast: boolean;
   duplicates: boolean;
   sourceOnly: boolean;
+  strictTargets: boolean;
   targets: string[];
   ignoreHeadings: string[];
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>] [--ignore-heading <text>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 
@@ -128,6 +136,7 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     failFast: false,
     duplicates: false,
     sourceOnly: false,
+    strictTargets: false,
     targets: [],
     ignoreHeadings: [],
   };
@@ -149,6 +158,8 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
       parsed.duplicates = true;
     } else if (option === "--source-only") {
       parsed.sourceOnly = true;
+    } else if (option === "--strict-targets") {
+      parsed.strictTargets = true;
     } else if (option === "--target") {
       const target = options[index + 1];
       if (!target || target.startsWith("--")) {
@@ -177,6 +188,30 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
   }
 
   return parsed;
+}
+
+async function isReadableTarget(cwd: string, target: string): Promise<boolean> {
+  try {
+    await access(join(cwd, target), constants.R_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function findMissingTargets(cwd: string, targets: string[], failFast: boolean): Promise<string[]> {
+  const missingTargets: string[] = [];
+
+  for (const target of targets) {
+    if (!await isReadableTarget(cwd, target)) {
+      missingTargets.push(target);
+      if (failFast) {
+        break;
+      }
+    }
+  }
+
+  return missingTargets;
 }
 
 export async function run(argv: string[] = process.argv.slice(2), cwd: string = process.cwd()): Promise<number> {
@@ -232,6 +267,30 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const targets = checkOptions.targets.length > 0 ? checkOptions.targets : config.targets;
   const ignoreHeadings = [...config.ignoreHeadings, ...checkOptions.ignoreHeadings];
   const checkStartTime = performance.now();
+
+  if (checkOptions.strictTargets) {
+    const missingTargets = await findMissingTargets(cwd, targets, failFast);
+    if (missingTargets.length > 0) {
+      if (checkOptions.json) {
+        console.log(stringifyJson(
+          formatJsonReport(
+            config.source,
+            failFast ? missingTargets : targets,
+            [],
+            [],
+            elapsedMsSince(checkStartTime),
+            checkOptions.duplicates ? [] : undefined,
+            missingTargets,
+          ),
+          checkOptions.pretty,
+        ));
+      } else {
+        console.log(formatMissingTargetReport(missingTargets));
+      }
+      return 1;
+    }
+  }
+
   const sourceHeadings = await readHeadings(cwd, config.source, ignoreHeadings);
   const checkedTargets: string[] = [];
   const targetReports: TargetReport[] = [];

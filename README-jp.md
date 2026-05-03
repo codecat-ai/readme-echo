@@ -63,7 +63,7 @@ readme-echo check
 
 差分が見つかった場合、終了コード `1` で終了し、欠落、余分、または順序変更された見出しを報告します。
 
-使い方: `readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>] [--ignore-heading <text>]`
+使い方: `readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>]`
 
 `readme-echo check --summary` を使うと、`Checked 2 target README file(s): 1 drift report(s).` のような簡潔な最終サマリー行を出力できます。
 
@@ -77,6 +77,8 @@ readme-echo check
 
 `readme-echo check --target README-zh.md` を使うと、設定済みまたは検出済みのターゲットを 1 つだけ確認できます。`--target` を繰り返すと、複数の特定 README ファイルを確認できます。
 
+`readme-echo check --strict-targets` を使うと、設定済みまたは選択済みのすべてのターゲット README パスが比較前に存在し、読み取り可能であることを要求できます。欠落したターゲットがある場合、コマンドは終了コード `1` で終了し、テキスト出力は各欠落ターゲットを示し、JSON 出力は `ok` を `false` にして `missingTargets` にそれらを列挙します。
+
 `readme-echo check --ignore-heading "Changelog"` を使うと、この実行だけで追加の完全一致見出しテキストを 1 つ無視できます。`--ignore-heading` を繰り返すと、複数の実行時無視項目を追加できます。これらは `.readme-echo.json` の `ignoreHeadings` に追加して適用されます。
 
 `readme-echo check --duplicates` を使うと、`ignoreHeadings` のフィルタリング後に、ソース README と確認済みターゲット内の重複見出しを報告できます。重複とは、同じファイル内で同じ見出しレベルと同じテキストが複数回現れることです。重複レポートがある場合、`ok` は false になり終了コードは `1` になりますが、`summary.driftReports` は引き続きファイル間の差分だけを表します。JSON 出力には、各ファイルパスと重複項目 `{ level, text, count }` を含む `duplicateReports` が追加されます。
@@ -85,7 +87,7 @@ readme-echo check
 
 `readme-echo check --quiet` を使うと、ファイルが同期している場合の出力を抑制できます。差分レポートは引き続き出力されます。`--summary` と組み合わせると、成功時はサマリーを抑制し、失敗時はサマリーを出力します。
 
-`readme-echo check --fail-fast` を使うと、最初に差分があるターゲットで停止します。`--duplicates` も指定した場合は、最初に重複見出しがあるターゲットでも停止します。このフラグは、設定で `failFast` が省略されている場合や `false` の場合でも fail-fast を有効にします。重複診断が有効な場合、ソース README の重複見出しは引き続き報告されます。
+`readme-echo check --fail-fast` を使うと、最初に差分があるターゲットで停止します。`--duplicates` も指定した場合は、最初に重複見出しがあるターゲットでも停止します。`--strict-targets` と一緒に使うと、最初の欠落ターゲットで停止します。このフラグは、設定で `failFast` が省略されている場合や `false` の場合でも fail-fast を有効にします。重複診断が有効な場合、ソース README の重複見出しは引き続き報告されます。
 
 ## CI
 

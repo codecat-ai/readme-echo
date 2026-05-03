@@ -63,7 +63,7 @@ readme-echo check
 
 当发现漂移时，命令以退出码 `1` 结束，并报告缺失、多余或顺序变化的标题。
 
-用法：`readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--target <path>] [--ignore-heading <text>]`
+用法：`readme-echo check [--json] [--pretty] [--quiet] [--summary] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--target <path>] [--ignore-heading <text>]`
 
 使用 `readme-echo check --summary` 可打印简洁的最终摘要行，例如 `Checked 2 target README file(s): 1 drift report(s).`
 
@@ -77,6 +77,8 @@ readme-echo check
 
 使用 `readme-echo check --target README-zh.md` 可只检查一个已配置或已发现的目标。重复使用 `--target` 可检查多个指定的 README 文件。
 
+使用 `readme-echo check --strict-targets` 可要求每个已配置或已选择的目标 README 路径在比较前都存在且可读。缺失目标会让命令以退出码 `1` 结束；文本输出会列出每个缺失目标，JSON 输出会将 `ok` 设为 `false`，并在 `missingTargets` 中列出它们。
+
 使用 `readme-echo check --ignore-heading "Changelog"` 可在本次运行中额外忽略一个精确标题文本。重复使用 `--ignore-heading` 可添加多个运行时忽略项；它们会追加到 `.readme-echo.json` 的 `ignoreHeadings`。
 
 使用 `readme-echo check --duplicates` 可在应用 `ignoreHeadings` 过滤后，报告源 README 和每个已检查目标中的重复标题。重复标题指同一文件中相同层级和相同文本的标题出现多次。重复标题报告会让 `ok` 为 false，并以退出码 `1` 结束，但 `summary.driftReports` 仍只表示跨文件漂移。JSON 输出会添加 `duplicateReports`，其中包含每个文件路径以及重复项 `{ level, text, count }`。
@@ -85,7 +87,7 @@ readme-echo check
 
 使用 `readme-echo check --quiet` 可在文件保持同步时禁止输出。漂移报告仍会打印。与 `--summary` 一起使用时，成功时会隐藏摘要，失败时会打印摘要。
 
-使用 `readme-echo check --fail-fast` 可在第一个发生漂移的目标处停止；当同时使用 `--duplicates` 时，也会在第一个有重复标题的目标处停止。即使配置中省略 `failFast` 或将其设为 `false`，该标志也会启用 fail-fast。启用重复标题诊断时，源 README 的重复标题仍会被报告。
+使用 `readme-echo check --fail-fast` 可在第一个发生漂移的目标处停止；当同时使用 `--duplicates` 时，也会在第一个有重复标题的目标处停止。与 `--strict-targets` 一起使用时，它会在第一个缺失目标后停止。即使配置中省略 `failFast` 或将其设为 `false`，该标志也会启用 fail-fast。启用重复标题诊断时，源 README 的重复标题仍会被报告。
 
 ## CI
 
