@@ -63,7 +63,7 @@ readme-echo check
 
 差分が見つかった場合、終了コード `1` で終了し、欠落、余分、または順序変更された見出しを報告します。
 
-使い方: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
+使い方: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--require-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
 
 使い方: `readme-echo version`
 
@@ -77,7 +77,7 @@ readme-echo check
 
 `readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`summary`、`targetReports`、`reports` を含む JSON オブジェクトを出力し、`summary` には `checkedTargets`、`driftReports`、`totalDurationMs` が含まれます。各 `targetReports` エントリには、ターゲットパス、ターゲット単位の `ok` 状態、非負の `durationMs` が含まれます。`--json` と一緒に `--no-timing` を使うと、`summary.totalDurationMs` とすべての `targetReports[].durationMs` を省略しつつ、その他の JSON 形状と終了コードの動作を保てるため、決定的なスナップショットに使えます。差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。fail-fast が途中で停止した場合、`targets`、`summary`、`targetReports`、`reports` には確認済みのターゲットだけが反映されます。
 
-`readme-echo check --exit-zero` を使うと、助言目的のローカル監査や非ブロッキング CI ジョブとして実行できます。要求されたチェックはすべて実行し、通常と同じテキストまたは JSON 診断を出力しますが、差分、重複見出しレポート、strict な欠落ターゲットレポートでは終了コード `0` を返します。診断が失敗した場合も JSON の `ok` は `false` のままです。使い方の誤りや無効なオプションは引き続き終了コード `1` を返し、このオプションは `check` にだけ適用されます。
+`readme-echo check --exit-zero` を使うと、助言目的のローカル監査や非ブロッキング CI ジョブとして実行できます。要求されたチェックはすべて実行し、通常と同じテキストまたは JSON 診断を出力しますが、差分、重複見出しレポート、strict な欠落ターゲットレポート、必須ターゲットレポートでは終了コード `0` を返します。診断が失敗した場合も JSON の `ok` は `false` のままです。使い方の誤りや無効なオプションは引き続き終了コード `1` を返し、このオプションは `check` にだけ適用されます。
 
 `check` と `list-targets` では、`--pretty` を `--json` と一緒に使うと、JSON 出力を 2 スペースのインデントで整形できます。たとえば `readme-echo check --json --pretty` や `readme-echo list-targets --json --pretty` です。`--pretty` を使わない場合、これらの JSON 出力はコンパクトなままです。
 
@@ -88,6 +88,8 @@ readme-echo check
 `readme-echo check --target README-zh.md` を使うと、設定済みまたは検出済みのターゲットを 1 つだけ確認できます。`--target` を繰り返すと、複数の特定 README ファイルを確認できます。
 
 `readme-echo check --strict-targets` を使うと、設定済みまたは選択済みのすべてのターゲット README パスが比較前に存在し、読み取り可能であることを要求できます。欠落したターゲットがある場合、コマンドは終了コード `1` で終了し、テキスト出力は各欠落ターゲットを示し、JSON 出力は `ok` を `false` にして `missingTargets` にそれらを列挙します。
+
+`readme-echo check --require-targets` を使うと、比較前に少なくとも 1 つの有効なターゲット README があることを要求できます。設定済みまたは検出済みのターゲットがない場合、テキスト出力は `No target README files found.` になり、JSON 出力は `ok` を `false` にし、`targets` と `targetReports` を空のままにし、`checkedTargets: 0` と `driftReports: 0` を報告し、`missingTargets: []` を含めます。このフラグを使わない場合、空のターゲットリストは引き続き成功します。
 
 `readme-echo check --ignore-heading "Changelog"` を使うと、この実行だけで追加の完全一致見出しテキストを 1 つ無視できます。`--ignore-heading` を繰り返すと、複数の実行時無視項目を追加できます。これらは `.readme-echo.json` の `ignoreHeadings` に追加して適用されます。
 

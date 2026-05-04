@@ -63,7 +63,7 @@ When files are synchronized, the command exits with code `0`.
 
 When drift is found, it exits with code `1` and reports missing, extra, or reordered headings.
 
-Usage: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
+Usage: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--require-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
 
 Usage: `readme-echo version`
 
@@ -77,7 +77,7 @@ Use `readme-echo check --summary-only` to print only that summary line in text o
 
 Use `readme-echo check --json` for machine-readable output. It prints a JSON object with `ok`, `source`, `targets`, `summary`, `targetReports`, and `reports`; `summary` includes `checkedTargets`, `driftReports`, and `totalDurationMs`. Each `targetReports` entry includes the target path, target-level `ok` status, and non-negative `durationMs`. Add `--no-timing` with `--json` to omit `summary.totalDurationMs` and every `targetReports[].durationMs` while preserving the rest of the JSON shape and exit-code behavior for deterministic snapshots. Drifting reports include the target path and structured heading differences. When fail-fast stops early, `targets`, `summary`, `targetReports`, and `reports` reflect only the targets that were checked.
 
-Use `readme-echo check --exit-zero` for advisory local audits or non-blocking CI jobs. It still performs every requested check and prints the same text or JSON diagnostics, but drift, duplicate heading reports, and strict missing target reports return exit code `0`. JSON `ok` remains `false` when diagnostics fail. Usage errors and invalid options still return exit code `1`, and this option applies only to `check`.
+Use `readme-echo check --exit-zero` for advisory local audits or non-blocking CI jobs. It still performs every requested check and prints the same text or JSON diagnostics, but drift, duplicate heading reports, strict missing target reports, and required-target reports return exit code `0`. JSON `ok` remains `false` when diagnostics fail. Usage errors and invalid options still return exit code `1`, and this option applies only to `check`.
 
 For `check` and `list-targets`, add `--pretty` with `--json` to format JSON output with two-space indentation, for example `readme-echo check --json --pretty` or `readme-echo list-targets --json --pretty`. Without `--pretty`, those JSON outputs stay compact.
 
@@ -88,6 +88,8 @@ Use `readme-echo show-config` to print the effective configuration after default
 Use `readme-echo check --target README-zh.md` to check only one configured or discovered target. Repeat `--target` to check multiple specific README files.
 
 Use `readme-echo check --strict-targets` to require every configured or selected target README path to exist and be readable before comparison. Missing targets make the command exit with code `1`, text output names each missing target, and JSON output sets `ok` to `false` and lists them in `missingTargets`.
+
+Use `readme-echo check --require-targets` to require at least one effective target README before comparison. When no configured or discovered targets exist, text output is `No target README files found.`, JSON output sets `ok` to `false`, keeps `targets` and `targetReports` empty, reports `checkedTargets: 0` and `driftReports: 0`, and includes `missingTargets: []`. Without this flag, an empty target list still passes.
 
 Use `readme-echo check --ignore-heading "Changelog"` to ignore one additional exact heading text for this run. Repeat `--ignore-heading` to add multiple runtime ignores; they are applied in addition to `.readme-echo.json` `ignoreHeadings`.
 
