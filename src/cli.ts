@@ -50,6 +50,7 @@ type JsonReportOptions = {
   duplicateReports?: DuplicateReport[];
   missingTargets?: string[];
   includeTiming?: boolean;
+  targetRequirementFailed?: boolean;
 };
 
 function elapsedMsSince(startTime: number): number {
@@ -98,6 +99,7 @@ function formatJsonReport(
     duplicateReports,
     missingTargets,
     includeTiming = true,
+    targetRequirementFailed = false,
   } = options;
   const summary = {
     checkedTargets: targets.length,
@@ -108,7 +110,10 @@ function formatJsonReport(
     ? targetReports
     : targetReports.map(({ target, ok }) => ({ target, ok }));
   const payload = {
-    ok: results.length === 0 && (!duplicateReports || duplicateReports.length === 0) && (!missingTargets || missingTargets.length === 0),
+    ok: results.length === 0
+      && (!duplicateReports || duplicateReports.length === 0)
+      && (!missingTargets || missingTargets.length === 0)
+      && !targetRequirementFailed,
     source,
     targets,
     summary,
@@ -141,6 +146,7 @@ type CheckOptions = {
   duplicates: boolean;
   sourceOnly: boolean;
   strictTargets: boolean;
+  requireTargets: boolean;
   ignoreCase: boolean;
   exitZero: boolean;
   noTiming: boolean;
@@ -150,7 +156,7 @@ type CheckOptions = {
   maxDepth?: number;
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--require-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 const packageJsonPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
@@ -174,6 +180,7 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     duplicates: false,
     sourceOnly: false,
     strictTargets: false,
+    requireTargets: false,
     ignoreCase: false,
     exitZero: false,
     noTiming: false,
@@ -202,6 +209,8 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
       parsed.sourceOnly = true;
     } else if (option === "--strict-targets") {
       parsed.strictTargets = true;
+    } else if (option === "--require-targets") {
+      parsed.requireTargets = true;
     } else if (option === "--ignore-case") {
       parsed.ignoreCase = true;
     } else if (option === "--exit-zero") {
@@ -346,6 +355,30 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const targets = checkOptions.targets.length > 0 ? checkOptions.targets : config.targets;
   const ignoreHeadings = [...config.ignoreHeadings, ...checkOptions.ignoreHeadings];
   const checkStartTime = performance.now();
+
+  if (checkOptions.requireTargets && targets.length === 0) {
+    if (checkOptions.json) {
+      console.log(stringifyJson(
+        formatJsonReport(
+          config.source,
+          [],
+          [],
+          [],
+          elapsedMsSince(checkStartTime),
+          {
+            duplicateReports: checkOptions.duplicates ? [] : undefined,
+            missingTargets: [],
+            includeTiming: !checkOptions.noTiming,
+            targetRequirementFailed: true,
+          },
+        ),
+        checkOptions.pretty,
+      ));
+    } else {
+      console.log("No target README files found.");
+    }
+    return checkOptions.exitZero ? 0 : 1;
+  }
 
   if (checkOptions.strictTargets) {
     const missingTargets = await findMissingTargets(cwd, targets, failFast);

@@ -404,6 +404,79 @@ test("CLI check --target limits comparisons to the requested target README", asy
   assert.deepEqual(payload.reports, []);
 });
 
+test("CLI check passes with no target READMEs by default", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-no-targets-default-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check"]);
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stdout, "All README files are synchronized.\n");
+  assert.equal(result.stderr, "");
+});
+
+test("CLI check --require-targets fails in text output when no targets are configured or discovered", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-require-targets-text-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--require-targets"]);
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "No target README files found.\n");
+  assert.equal(result.stderr, "");
+});
+
+test("CLI check --require-targets reports empty targets as JSON without timing", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-require-targets-json-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--require-targets", "--json", "--no-timing"]);
+  const payload = JSON.parse(result.stdout) as {
+    ok: boolean;
+    source: string;
+    targets: string[];
+    summary: {
+      checkedTargets: number;
+      driftReports: number;
+      totalDurationMs?: unknown;
+    };
+    targetReports: unknown[];
+    reports: unknown[];
+    missingTargets: string[];
+  };
+
+  assert.equal(result.code, 1);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, false);
+  assert.equal(payload.source, "README.md");
+  assert.deepEqual(payload.targets, []);
+  assert.deepEqual(payload.summary, {
+    checkedTargets: 0,
+    driftReports: 0,
+  });
+  assert.deepEqual(payload.targetReports, []);
+  assert.deepEqual(payload.reports, []);
+  assert.deepEqual(payload.missingTargets, []);
+});
+
+test("CLI check --require-targets --exit-zero is advisory while JSON ok remains false", async () => {
+  const cwd = join(tmpdir(), `readme-echo-cli-require-targets-exit-zero-${Date.now()}`);
+  await mkdir(cwd, { recursive: true });
+  await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
+
+  const result = await runCli(cwd, ["check", "--require-targets", "--json", "--no-timing", "--exit-zero"]);
+  const payload = JSON.parse(result.stdout) as { ok: boolean; targets: string[]; missingTargets: string[] };
+
+  assert.equal(result.code, 0);
+  assert.equal(result.stderr, "");
+  assert.equal(payload.ok, false);
+  assert.deepEqual(payload.targets, []);
+  assert.deepEqual(payload.missingTargets, []);
+});
+
 test("CLI check --ignore-case treats heading titles that differ only by case as equal", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-ignore-case-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
@@ -697,7 +770,7 @@ test("CLI check --source-only without --duplicates prints usage", async () => {
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--ignore-case\] \[--exit-zero\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--require-targets\] \[--ignore-case\] \[--exit-zero\] \[--target <path>\]/);
 });
 
 test("CLI check --duplicates --source-only prints only source duplicate reports", async () => {
@@ -1315,7 +1388,7 @@ test("CLI keeps usage errors human-readable when --json is present", async () =>
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--ignore-case\] \[--exit-zero\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--require-targets\] \[--ignore-case\] \[--exit-zero\] \[--target <path>\]/);
 });
 
 test("CLI check rejects --ignore-heading without a value", async () => {
@@ -1337,7 +1410,7 @@ test("CLI check rejects --pretty without --json", async () => {
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, "");
-  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--ignore-case\] \[--exit-zero\] \[--target <path>\]/);
+  assert.match(result.stderr, /Usage: readme-echo check \[--json\] \[--pretty\] \[--no-timing\] \[--quiet\] \[--summary\] \[--summary-only\] \[--fail-fast\] \[--duplicates\] \[--source-only\] \[--strict-targets\] \[--require-targets\] \[--ignore-case\] \[--exit-zero\] \[--target <path>\]/);
 });
 
 test("CLI exits 1 and prints drift when mismatch exists", async () => {

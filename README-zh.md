@@ -63,7 +63,7 @@ readme-echo check
 
 当发现漂移时，命令以退出码 `1` 结束，并报告缺失、多余或顺序变化的标题。
 
-用法：`readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
+用法：`readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--require-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
 
 用法：`readme-echo version`
 
@@ -77,7 +77,7 @@ readme-echo check
 
 使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets`、`summary`、`targetReports` 和 `reports` 的 JSON 对象；`summary` 包含 `checkedTargets`、`driftReports` 和 `totalDurationMs`。每个 `targetReports` 条目都包含目标路径、目标级别的 `ok` 状态，以及非负的 `durationMs`。将 `--no-timing` 与 `--json` 一起使用，可省略 `summary.totalDurationMs` 和每个 `targetReports[].durationMs`，同时保留其余 JSON 结构和退出码行为，便于生成确定性的快照。存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets`、`summary`、`targetReports` 和 `reports` 只反映已经检查过的目标。
 
-使用 `readme-echo check --exit-zero` 可进行建议性本地审计或非阻塞 CI 任务。它仍会执行所有请求的检查，并打印相同的文本或 JSON 诊断；但漂移、重复标题报告和 strict 缺失目标报告会返回退出码 `0`。当诊断失败时，JSON `ok` 仍保持 `false`。用法错误和无效选项仍返回退出码 `1`，且该选项只适用于 `check`。
+使用 `readme-echo check --exit-zero` 可进行建议性本地审计或非阻塞 CI 任务。它仍会执行所有请求的检查，并打印相同的文本或 JSON 诊断；但漂移、重复标题报告、strict 缺失目标报告和必需目标报告会返回退出码 `0`。当诊断失败时，JSON `ok` 仍保持 `false`。用法错误和无效选项仍返回退出码 `1`，且该选项只适用于 `check`。
 
 对于 `check` 和 `list-targets`，将 `--pretty` 与 `--json` 一起使用，可用两个空格缩进格式化 JSON 输出，例如 `readme-echo check --json --pretty` 或 `readme-echo list-targets --json --pretty`。不使用 `--pretty` 时，这些 JSON 输出保持紧凑格式。
 
@@ -88,6 +88,8 @@ readme-echo check
 使用 `readme-echo check --target README-zh.md` 可只检查一个已配置或已发现的目标。重复使用 `--target` 可检查多个指定的 README 文件。
 
 使用 `readme-echo check --strict-targets` 可要求每个已配置或已选择的目标 README 路径在比较前都存在且可读。缺失目标会让命令以退出码 `1` 结束；文本输出会列出每个缺失目标，JSON 输出会将 `ok` 设为 `false`，并在 `missingTargets` 中列出它们。
+
+使用 `readme-echo check --require-targets` 可要求比较前至少存在一个生效的目标 README。当没有配置或发现任何目标时，文本输出为 `No target README files found.`；JSON 输出会将 `ok` 设为 `false`，保持 `targets` 和 `targetReports` 为空，报告 `checkedTargets: 0` 和 `driftReports: 0`，并包含 `missingTargets: []`。不使用该标志时，空目标列表仍会通过。
 
 使用 `readme-echo check --ignore-heading "Changelog"` 可在本次运行中额外忽略一个精确标题文本。重复使用 `--ignore-heading` 可添加多个运行时忽略项；它们会追加到 `.readme-echo.json` 的 `ignoreHeadings`。
 
