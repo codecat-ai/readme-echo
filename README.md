@@ -6,10 +6,13 @@ It is designed for maintainers who want a deterministic, CI-friendly documentati
 
 ## Install
 
-Use it with `npx` after publishing:
+Readme Echo is not published to npm yet. Until a package release is available, use it from a local clone:
 
 ```sh
-npx readme-echo check
+git clone https://github.com/codecat-ai/readme-echo.git
+cd readme-echo
+npm ci
+node src/cli.ts check
 ```
 
 For local development from this repository:

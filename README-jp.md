@@ -6,10 +6,13 @@ Readme Echo は、ローカライズされた README がメインの英語 READM
 
 ## インストール
 
-公開後は `npx` で利用できます。
+Readme Echo はまだ npm に公開されていません。package release が利用可能になるまでは、ローカルに clone して使ってください。
 
 ```sh
-npx readme-echo check
+git clone https://github.com/codecat-ai/readme-echo.git
+cd readme-echo
+npm ci
+node src/cli.ts check
 ```
 
 このリポジトリでローカル開発する場合:
