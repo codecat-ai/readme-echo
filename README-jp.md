@@ -63,7 +63,7 @@ readme-echo check
 
 差分が見つかった場合、終了コード `1` で終了し、欠落、余分、または順序変更された見出しを報告します。
 
-使い方: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--require-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
+使い方: `readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--heading-counts] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--require-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
 
 使い方: `readme-echo version`
 
@@ -74,6 +74,8 @@ readme-echo check
 `readme-echo check --summary` を使うと、`Checked 2 target README file(s): 1 drift report(s).` のような簡潔な最終サマリー行を出力できます。
 
 `readme-echo check --summary-only` を使うと、テキスト出力ではそのサマリー行だけを出力できます。通常の check と同じ成功または失敗の終了状態を返し、成功時は `All README files are synchronized.` を出力せず、失敗時は詳細な差分や重複見出しレポートを抑制します。`--json` とは組み合わせられません。
+
+`readme-echo check --heading-counts` を使うと、通常の成功または差分出力の後に、`Heading counts: source 3, targets 6.` のようなテキスト専用の行を追加できます。件数は、無視見出しと深さフィルターを適用した後に数えます。ターゲット件数は、確認済みのすべてのターゲット README ファイルの見出し数の合計です。この行は `--summary-only` では抑制され、`--json` とは組み合わせられません。
 
 `readme-echo check --json` を使うと、機械可読な出力を得られます。`ok`、`source`、`targets`、`summary`、`targetReports`、`reports` を含む JSON オブジェクトを出力し、`summary` には `checkedTargets`、`driftReports`、`totalDurationMs` が含まれます。各 `targetReports` エントリには、ターゲットパス、ターゲット単位の `ok` 状態、非負の `durationMs` が含まれます。`--json` と一緒に `--no-timing` を使うと、`summary.totalDurationMs` とすべての `targetReports[].durationMs` を省略しつつ、その他の JSON 形状と終了コードの動作を保てるため、決定的なスナップショットに使えます。差分があるレポートにはターゲットパスと構造化された見出し差分が含まれます。fail-fast が途中で停止した場合、`targets`、`summary`、`targetReports`、`reports` には確認済みのターゲットだけが反映されます。
 

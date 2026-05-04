@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added `--pretty` for two-space formatted JSON output on `readme-echo check --json` and `readme-echo list-targets --json`.
 - Added `readme-echo check --summary` for concise checked-target and drift-report totals in text output.
 - Added `readme-echo check --summary-only` for text output that prints only the existing summary line and rejects `--json`.
+- Added `readme-echo check --heading-counts` for optional text-only source and checked-target heading totals after ignore and depth filters.
 - Added JSON `summary.checkedTargets` and `summary.driftReports` fields to `readme-echo check --json` output.
 - Added optional fail-fast checks through `--fail-fast` and the `failFast` config field.
 - Added `readme-echo check --duplicates` for source and checked-target duplicate heading diagnostics in text and JSON output.

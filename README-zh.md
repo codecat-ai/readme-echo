@@ -63,7 +63,7 @@ readme-echo check
 
 当发现漂移时，命令以退出码 `1` 结束，并报告缺失、多余或顺序变化的标题。
 
-用法：`readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--require-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
+用法：`readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--heading-counts] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--require-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]`
 
 用法：`readme-echo version`
 
@@ -74,6 +74,8 @@ readme-echo check
 使用 `readme-echo check --summary` 可打印简洁的最终摘要行，例如 `Checked 2 target README file(s): 1 drift report(s).`
 
 使用 `readme-echo check --summary-only` 可在文本输出中只打印该摘要行。它会保持普通检查的成功或失败退出状态；成功时不会打印 `All README files are synchronized.`，失败时会隐藏详细漂移或重复标题报告。它不能与 `--json` 组合使用。
+
+使用 `readme-echo check --heading-counts` 可在普通成功或漂移输出后追加一行仅用于文本输出的计数，例如 `Heading counts: source 3, targets 6.`。计数会在忽略标题和深度过滤之后计算；目标计数是所有已检查目标 README 文件的标题数总和。该行会被 `--summary-only` 抑制，且不能与 `--json` 组合使用。
 
 使用 `readme-echo check --json` 可获得机器可读输出。它会打印包含 `ok`、`source`、`targets`、`summary`、`targetReports` 和 `reports` 的 JSON 对象；`summary` 包含 `checkedTargets`、`driftReports` 和 `totalDurationMs`。每个 `targetReports` 条目都包含目标路径、目标级别的 `ok` 状态，以及非负的 `durationMs`。将 `--no-timing` 与 `--json` 一起使用，可省略 `summary.totalDurationMs` 和每个 `targetReports[].durationMs`，同时保留其余 JSON 结构和退出码行为，便于生成确定性的快照。存在漂移的报告会包含目标路径和结构化标题差异。当 fail-fast 提前停止时，`targets`、`summary`、`targetReports` 和 `reports` 只反映已经检查过的目标。
 
