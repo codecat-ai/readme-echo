@@ -23,6 +23,10 @@ function formatSummary(checkedTargets: number, driftReports: number): string {
   return `Checked ${checkedTargets} target README file(s): ${driftReports} drift report(s).`;
 }
 
+function formatHeadingCounts(sourceHeadingCount: number, targetHeadingCount: number): string {
+  return `Heading counts: source ${sourceHeadingCount}, targets ${targetHeadingCount}.`;
+}
+
 function formatMissingTargetReport(targets: string[]): string {
   return targets.map((target) => `Missing target README file: ${target}`).join("\n");
 }
@@ -142,6 +146,7 @@ type CheckOptions = {
   quiet: boolean;
   summary: boolean;
   summaryOnly: boolean;
+  headingCounts: boolean;
   failFast: boolean;
   duplicates: boolean;
   sourceOnly: boolean;
@@ -156,7 +161,7 @@ type CheckOptions = {
   maxDepth?: number;
 };
 
-const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--require-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]";
+const checkUsage = "Usage: readme-echo check [--json] [--pretty] [--no-timing] [--quiet] [--summary] [--summary-only] [--heading-counts] [--fail-fast] [--duplicates] [--source-only] [--strict-targets] [--require-targets] [--ignore-case] [--exit-zero] [--target <path>] [--ignore-heading <text>] [--min-depth <n>] [--max-depth <n>]";
 const listTargetsUsage = "Usage: readme-echo list-targets [--json] [--pretty]";
 const showConfigUsage = "Usage: readme-echo show-config [--json] [--pretty]";
 const packageJsonPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
@@ -176,6 +181,7 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
     quiet: false,
     summary: false,
     summaryOnly: false,
+    headingCounts: false,
     failFast: false,
     duplicates: false,
     sourceOnly: false,
@@ -201,6 +207,8 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
       parsed.summary = true;
     } else if (option === "--summary-only") {
       parsed.summaryOnly = true;
+    } else if (option === "--heading-counts") {
+      parsed.headingCounts = true;
     } else if (option === "--fail-fast") {
       parsed.failFast = true;
     } else if (option === "--duplicates") {
@@ -259,6 +267,10 @@ function parseCheckOptions(options: string[]): CheckOptions | undefined {
   }
 
   if (parsed.summaryOnly && parsed.json) {
+    return undefined;
+  }
+
+  if (parsed.headingCounts && parsed.json) {
     return undefined;
   }
 
@@ -412,6 +424,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
   const reports: string[] = [];
   const comparisonResults: ComparisonResult[] = [];
   const duplicateReports: DuplicateReport[] = [];
+  let targetHeadingCount = 0;
   let hasDrift = false;
 
   if (checkOptions.duplicates) {
@@ -425,6 +438,7 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
     const targetStartTime = performance.now();
     checkedTargets.push(target);
     const targetHeadings = await readHeadings(cwd, target, ignoreHeadings, checkOptions.minDepth, checkOptions.maxDepth);
+    targetHeadingCount += targetHeadings.length;
     const targetDuplicateReport = checkOptions.duplicates && !checkOptions.sourceOnly
       ? detectDuplicateHeadings(target, targetHeadings)
       : undefined;
@@ -483,7 +497,10 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
       ...reports,
       ...duplicateReports.map((report) => formatDuplicateReport(report)),
     ].join("\n\n");
-    console.log(checkOptions.summary ? `${textReport}\n\n${summaryReport}` : textReport);
+    const reportWithHeadingCounts = checkOptions.headingCounts
+      ? `${textReport}\n\n${formatHeadingCounts(sourceHeadings.length, targetHeadingCount)}`
+      : textReport;
+    console.log(checkOptions.summary ? `${reportWithHeadingCounts}\n\n${summaryReport}` : reportWithHeadingCounts);
     return checkOptions.exitZero ? 0 : 1;
   }
 
@@ -494,6 +511,9 @@ export async function run(argv: string[] = process.argv.slice(2), cwd: string = 
 
   if (!checkOptions.quiet) {
     console.log("All README files are synchronized.");
+    if (checkOptions.headingCounts) {
+      console.log(formatHeadingCounts(sourceHeadings.length, targetHeadingCount));
+    }
     if (checkOptions.summary) {
       console.log(formatSummary(checkedTargets.length, comparisonResults.length));
     }
