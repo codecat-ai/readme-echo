@@ -38,7 +38,7 @@ test("detects extra headings", () => {
 
 test("detects reordered headings", () => {
   const target = [source[0], source[2], source[1], source[3]];
-  const result = compareHeadings("README.md", "README-jp.md", source, target, {
+  const result = compareHeadings("README.md", "README-ja.md", source, target, {
     allowLocalizedTitles: false,
   });
 

@@ -1,6 +1,6 @@
 # Readme Echo
 
-[English](README.md) | [中文](README-zh.md) | [日本語](README-jp.md)
+[English](README.md) | [中文](README-zh.md) | [日本語](README-ja.md)
 
 
 Readme Echo 是一个小型 CLI，用来检查本地化 README 文件是否与主要英文 README 保持相同的标题结构。
@@ -29,7 +29,7 @@ node src/cli.ts check
 
 ## 快速开始
 
-创建主文件 `README.md`，以及一个或多个顶层本地化文件，例如 `README-zh.md` 或 `README-jp.md`。
+创建主文件 `README.md`，以及一个或多个顶层本地化文件，例如 `README-zh.md` 或 `README-ja.md`。
 
 运行：
 
@@ -48,7 +48,7 @@ readme-echo check
 ```json
 {
   "source": "README.md",
-  "targets": ["README-zh.md", "README-jp.md"],
+  "targets": ["README-zh.md", "README-ja.md"],
   "ignoreHeadings": ["Changelog"],
   "allowLocalizedTitles": true,
   "failFast": false

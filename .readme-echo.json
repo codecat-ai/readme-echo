@@ -2,7 +2,7 @@
   "source": "README.md",
   "targets": [
     "README-zh.md",
-    "README-jp.md"
+    "README-ja.md"
   ],
   "ignoreHeadings": [],
   "allowLocalizedTitles": true

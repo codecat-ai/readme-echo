@@ -16,7 +16,7 @@ This idea is inspired by common open-source documentation maintenance patterns, 
 
 ## Target users
 
-- Maintainers of open-source projects with `README.md`, `README-zh.md`, `README-jp.md`, or similar localized docs
+- Maintainers of open-source projects with `README.md`, `README-zh.md`, `README-ja.md`, or similar localized docs
 - AI-assisted project maintainers that need documentation consistency checks in CI
 - Small libraries and CLI tools that want a simple, dependency-light documentation quality gate
 
@@ -73,7 +73,7 @@ readme-echo/
     cli.test.ts
   README.md
   README-zh.md
-  README-jp.md
+  README-ja.md
   LICENSE
   CHANGELOG.md
   CONTRIBUTING.md
@@ -107,7 +107,7 @@ Avoid shallow tests that only check imports or implementation details.
 
 - `README.md` in English
 - `README-zh.md` in Chinese, synchronized in meaning
-- `README-jp.md` in Japanese, synchronized in meaning
+- `README-ja.md` in Japanese, synchronized in meaning
 - Briefly mention that the project is maintained with AI assistance, but do not overemphasize it
 - Include install, quick start, config, CI, development, testing, roadmap, contributing, license
 

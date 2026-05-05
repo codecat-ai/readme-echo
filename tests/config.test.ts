@@ -11,13 +11,13 @@ test("loads config with sane defaults and discovers README-* targets", async () 
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Source\n");
   await writeFile(join(cwd, "README-zh.md"), "# 源\n");
-  await writeFile(join(cwd, "README-jp.md"), "# ソース\n");
+  await writeFile(join(cwd, "README-ja.md"), "# ソース\n");
   await writeFile(join(cwd, "README.notes.md"), "# Notes\n");
 
   const config = await loadConfig(cwd);
 
   assert.equal(config.source, "README.md");
-  assert.deepEqual(config.targets, ["README-jp.md", "README-zh.md"]);
+  assert.deepEqual(config.targets, ["README-ja.md", "README-zh.md"]);
   assert.deepEqual(config.ignoreHeadings, []);
   assert.equal(config.allowLocalizedTitles, false);
   assert.equal(config.failFast, false);

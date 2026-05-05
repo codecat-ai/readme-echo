@@ -1,6 +1,6 @@
 # Readme Echo
 
-[English](README.md) | [中文](README-zh.md) | [日本語](README-jp.md)
+[English](README.md) | [中文](README-zh.md) | [日本語](README-ja.md)
 
 
 Readme Echo is a small CLI that checks whether localized README files keep the same heading structure as the main English README.
@@ -29,7 +29,7 @@ Node.js 22.18 or newer is required.
 
 ## Quick Start
 
-Create a main `README.md` and one or more top-level localized files such as `README-zh.md` or `README-jp.md`.
+Create a main `README.md` and one or more top-level localized files such as `README-zh.md` or `README-ja.md`.
 
 Run:
 
@@ -48,7 +48,7 @@ Add `.readme-echo.json` at the repository root when defaults are not enough:
 ```json
 {
   "source": "README.md",
-  "targets": ["README-zh.md", "README-jp.md"],
+  "targets": ["README-zh.md", "README-ja.md"],
   "ignoreHeadings": ["Changelog"],
   "allowLocalizedTitles": true,
   "failFast": false

@@ -68,7 +68,7 @@ test("CLI prints text summary with --summary", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--summary"]);
 
@@ -86,7 +86,7 @@ test("CLI check --heading-counts prints heading totals when synchronized", async
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n### Ignored\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n### Ignored\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n### Ignored\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n### Ignored\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--heading-counts", "--max-depth", "2"]);
 
@@ -100,7 +100,7 @@ test("CLI check --heading-counts prints heading totals with drift before summary
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--heading-counts", "--summary"]);
 
@@ -117,7 +117,7 @@ test("CLI check --heading-counts is suppressed by --summary-only", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--heading-counts", "--summary-only"]);
 
@@ -142,7 +142,7 @@ test("CLI check --summary-only prints only the summary line when synchronized", 
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--summary-only"]);
 
@@ -156,7 +156,7 @@ test("CLI check --summary-only prints only the summary line when drift exists", 
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--summary-only"]);
 
@@ -182,11 +182,11 @@ test("CLI check --summary-only summarizes checked targets after fail-fast and ru
   const cwd = join(tmpdir(), `readme-echo-cli-summary-only-compose-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
-    targets: ["README-zh.md", "README-jp.md", "README-fr.md"],
+    targets: ["README-zh.md", "README-ja.md", "README-fr.md"],
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n### Ignored\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n### Different\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n");
   await writeFile(join(cwd, "README-fr.md"), "# Project\n\n## Install\n");
 
   const result = await runCli(cwd, [
@@ -196,7 +196,7 @@ test("CLI check --summary-only summarizes checked targets after fail-fast and ru
     "--target",
     "README-zh.md",
     "--target",
-    "README-jp.md",
+    "README-ja.md",
     "--target",
     "README-fr.md",
     "--ignore-heading",
@@ -281,13 +281,13 @@ test("CLI list-targets prints discovered target READMEs one per line", async () 
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n");
   await writeFile(join(cwd, "notes.md"), "# Notes\n");
 
   const result = await runCli(cwd, ["list-targets"]);
 
   assert.equal(result.code, 0);
-  assert.equal(result.stdout, "README-jp.md\nREADME-zh.md\n");
+  assert.equal(result.stdout, "README-ja.md\nREADME-zh.md\n");
   assert.equal(result.stderr, "");
 });
 
@@ -296,16 +296,16 @@ test("CLI list-targets prints JSON source and targets", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n");
 
   const result = await runCli(cwd, ["list-targets", "--json"]);
 
   assert.equal(result.code, 0);
   assert.equal(result.stderr, "");
-  assert.equal(result.stdout, "{\"source\":\"README.md\",\"targets\":[\"README-jp.md\",\"README-zh.md\"]}\n");
+  assert.equal(result.stdout, "{\"source\":\"README.md\",\"targets\":[\"README-ja.md\",\"README-zh.md\"]}\n");
   assert.deepEqual(JSON.parse(result.stdout), {
     source: "README.md",
-    targets: ["README-jp.md", "README-zh.md"],
+    targets: ["README-ja.md", "README-zh.md"],
   });
 });
 
@@ -314,7 +314,7 @@ test("CLI list-targets prints pretty JSON with --json --pretty", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n");
 
   const result = await runCli(cwd, ["list-targets", "--json", "--pretty"]);
 
@@ -322,7 +322,7 @@ test("CLI list-targets prints pretty JSON with --json --pretty", async () => {
   assert.equal(result.stderr, "");
   assert.equal(result.stdout, `${JSON.stringify({
     source: "README.md",
-    targets: ["README-jp.md", "README-zh.md"],
+    targets: ["README-ja.md", "README-zh.md"],
   }, null, 2)}\n`);
 });
 
@@ -331,7 +331,7 @@ test("CLI list-targets respects configured source and targets", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
     source: "docs/README.md",
-    targets: ["docs/README-zh.md", "docs/README-jp.md"],
+    targets: ["docs/README-zh.md", "docs/README-ja.md"],
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n");
   await writeFile(join(cwd, "README-fr.md"), "# Project\n");
@@ -342,7 +342,7 @@ test("CLI list-targets respects configured source and targets", async () => {
   assert.equal(result.stderr, "");
   assert.deepEqual(JSON.parse(result.stdout), {
     source: "docs/README.md",
-    targets: ["docs/README-zh.md", "docs/README-jp.md"],
+    targets: ["docs/README-zh.md", "docs/README-ja.md"],
   });
 });
 
@@ -373,12 +373,12 @@ test("CLI show-config prints effective discovered config as pretty JSON", async 
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n");
 
   const result = await runCli(cwd, ["show-config"]);
   const expected = {
     source: "README.md",
-    targets: ["README-jp.md", "README-zh.md"],
+    targets: ["README-ja.md", "README-zh.md"],
     ignoreHeadings: [],
     allowLocalizedTitles: false,
     failFast: false,
@@ -451,7 +451,7 @@ test("CLI check --target limits comparisons to the requested target README", asy
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n");
 
   const result = await runCli(cwd, ["check", "--target", "README-zh.md", "--json"]);
   const payload = JSON.parse(result.stdout) as { ok: boolean; targets: string[]; reports: Array<{ target: string }> };
@@ -557,7 +557,7 @@ test("CLI check --strict-targets reports missing configured targets in text outp
   const cwd = join(tmpdir(), `readme-echo-cli-strict-targets-text-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
-    targets: ["README-zh.md", "README-jp.md"],
+    targets: ["README-zh.md", "README-ja.md"],
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
 
@@ -565,7 +565,7 @@ test("CLI check --strict-targets reports missing configured targets in text outp
 
   assert.equal(result.code, 1);
   assert.match(result.stdout, /Missing target README file: README-zh\.md/);
-  assert.match(result.stdout, /Missing target README file: README-jp\.md/);
+  assert.match(result.stdout, /Missing target README file: README-ja\.md/);
   assert.equal(result.stderr, "");
 });
 
@@ -581,7 +581,7 @@ test("CLI check --strict-targets reports missing selected targets in JSON output
     "--target",
     "README-zh.md",
     "--target",
-    "README-jp.md",
+    "README-ja.md",
   ]);
   const payload = JSON.parse(result.stdout) as {
     ok: boolean;
@@ -592,15 +592,15 @@ test("CLI check --strict-targets reports missing selected targets in JSON output
   assert.equal(result.code, 1);
   assert.equal(result.stderr, "");
   assert.equal(payload.ok, false);
-  assert.deepEqual(payload.targets, ["README-zh.md", "README-jp.md"]);
-  assert.deepEqual(payload.missingTargets, ["README-zh.md", "README-jp.md"]);
+  assert.deepEqual(payload.targets, ["README-zh.md", "README-ja.md"]);
+  assert.deepEqual(payload.missingTargets, ["README-zh.md", "README-ja.md"]);
 });
 
 test("CLI check --strict-targets --fail-fast stops after the first missing target", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-strict-targets-fail-fast-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
-    targets: ["README-zh.md", "README-jp.md"],
+    targets: ["README-zh.md", "README-ja.md"],
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
 
@@ -623,7 +623,7 @@ test("CLI check --json includes per-target and total timing data", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n");
 
   const result = await runCli(cwd, ["check", "--json"]);
   const payload = JSON.parse(result.stdout) as {
@@ -645,7 +645,7 @@ test("CLI check --json includes per-target and total timing data", async () => {
   assert.equal(payload.summary.driftReports, 1);
   assertNonNegativeNumber(payload.summary.totalDurationMs);
   assert.ok(Array.isArray(payload.targetReports));
-  assert.deepEqual(payload.targetReports.map((report) => report.target), ["README-jp.md", "README-zh.md"]);
+  assert.deepEqual(payload.targetReports.map((report) => report.target), ["README-ja.md", "README-zh.md"]);
   assert.deepEqual(payload.targetReports.map((report) => report.ok), [false, true]);
   for (const report of payload.targetReports) {
     assertNonNegativeNumber(report.durationMs);
@@ -657,7 +657,7 @@ test("CLI check --json --no-timing omits only JSON timing fields", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n");
 
   const result = await runCli(cwd, ["check", "--json", "--no-timing"]);
   const payload = JSON.parse(result.stdout) as {
@@ -682,15 +682,15 @@ test("CLI check --json --no-timing omits only JSON timing fields", async () => {
   assert.equal(result.stderr, "");
   assert.equal(payload.ok, false);
   assert.equal(payload.source, "README.md");
-  assert.deepEqual(payload.targets, ["README-jp.md", "README-zh.md"]);
+  assert.deepEqual(payload.targets, ["README-ja.md", "README-zh.md"]);
   assert.equal(payload.summary.checkedTargets, 2);
   assert.equal(payload.summary.driftReports, 1);
   assert.equal("totalDurationMs" in payload.summary, false);
   assert.deepEqual(payload.targetReports, [
-    { target: "README-jp.md", ok: false },
+    { target: "README-ja.md", ok: false },
     { target: "README-zh.md", ok: true },
   ]);
-  assert.deepEqual(payload.reports.map((report) => report.target), ["README-jp.md"]);
+  assert.deepEqual(payload.reports.map((report) => report.target), ["README-ja.md"]);
   assert.equal(invalidResult.code, 1);
   assert.equal(invalidResult.stdout, "");
   assert.match(invalidResult.stderr, /Usage: readme-echo check .*--no-timing/);
@@ -857,7 +857,7 @@ test("CLI check --duplicates respects ignored headings and --target", async () =
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Ignored\n\n## Ignored\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Ignored\n\n## Ignored\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Ignored\n\n## Usage\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Ignored\n\n## Usage\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--duplicates", "--target", "README-zh.md", "--json"]);
   const payload = JSON.parse(result.stdout) as {
@@ -877,7 +877,7 @@ test("CLI check --max-depth filters source and target headings before comparison
   const cwd = join(tmpdir(), `readme-echo-cli-max-depth-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
-    targets: ["README-zh.md", "README-jp.md"],
+    targets: ["README-zh.md", "README-ja.md"],
     ignoreHeadings: ["Ignored"],
   }));
   await writeFile(join(cwd, "README.md"), [
@@ -906,7 +906,7 @@ test("CLI check --max-depth filters source and target headings before comparison
     "## Usage",
     "",
   ].join("\n"));
-  await writeFile(join(cwd, "README-jp.md"), [
+  await writeFile(join(cwd, "README-ja.md"), [
     "# Project",
     "",
     "## Install",
@@ -948,7 +948,7 @@ test("CLI check --min-depth filters shallow headings before JSON comparison and 
   const cwd = join(tmpdir(), `readme-echo-cli-min-depth-json-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
-    targets: ["README-zh.md", "README-jp.md"],
+    targets: ["README-zh.md", "README-ja.md"],
     ignoreHeadings: ["Ignored"],
   }));
   await writeFile(join(cwd, "README.md"), [
@@ -983,7 +983,7 @@ test("CLI check --min-depth filters shallow headings before JSON comparison and 
     "### Source Tail",
     "",
   ].join("\n"));
-  await writeFile(join(cwd, "README-jp.md"), [
+  await writeFile(join(cwd, "README-ja.md"), [
     "# Target Title",
     "",
     "## Target Overview",
@@ -1007,7 +1007,7 @@ test("CLI check --min-depth filters shallow headings before JSON comparison and 
     "--target",
     "README-zh.md",
     "--target",
-    "README-jp.md",
+    "README-ja.md",
     "--ignore-heading",
     "API",
     "--min-depth",
@@ -1027,15 +1027,15 @@ test("CLI check --min-depth filters shallow headings before JSON comparison and 
   assert.equal(result.code, 1);
   assert.equal(result.stderr, "");
   assert.equal(payload.ok, false);
-  assert.deepEqual(payload.targets, ["README-zh.md", "README-jp.md"]);
+  assert.deepEqual(payload.targets, ["README-zh.md", "README-ja.md"]);
   assert.deepEqual(payload.targetReports, [
     { target: "README-zh.md", ok: true },
-    { target: "README-jp.md", ok: false },
+    { target: "README-ja.md", ok: false },
   ]);
   assert.deepEqual(payload.summary, { checkedTargets: 2, driftReports: 1 });
   assert.deepEqual(payload.duplicateReports, []);
   assert.equal(payload.reports.length, 1);
-  assert.equal(payload.reports[0]?.target, "README-jp.md");
+  assert.equal(payload.reports[0]?.target, "README-ja.md");
 });
 
 test("CLI check --min-depth filters shallow headings in text output", async () => {
@@ -1089,12 +1089,12 @@ test("CLI check --ignore-heading can be repeated and feeds the heading filter fo
   const cwd = join(tmpdir(), `readme-echo-cli-ignore-heading-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
-    targets: ["README-zh.md", "README-jp.md"],
+    targets: ["README-zh.md", "README-ja.md"],
     ignoreHeadings: ["Configured"],
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Configured\n\n## Runtime Only\n\n## Duplicate\n\n## Duplicate\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Configured\n\n## Runtime Only\n\n## Duplicate\n\n## Duplicate\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Configured\n\n## Runtime Only\n\n## Duplicate\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Configured\n\n## Runtime Only\n\n## Duplicate\n\n## Usage\n");
 
   const result = await runCli(cwd, [
     "check",
@@ -1116,7 +1116,7 @@ test("CLI check --ignore-heading can be repeated and feeds the heading filter fo
   assert.equal(result.code, 0);
   assert.equal(result.stderr, "");
   assert.equal(payload.ok, true);
-  assert.deepEqual(payload.targets, ["README-zh.md", "README-jp.md"]);
+  assert.deepEqual(payload.targets, ["README-zh.md", "README-ja.md"]);
   assert.deepEqual(payload.reports, []);
   assert.deepEqual(payload.duplicateReports, []);
 });
@@ -1125,11 +1125,11 @@ test("CLI check --duplicates fail-fast reports source duplicates and first faili
   const cwd = join(tmpdir(), `readme-echo-cli-duplicates-fail-fast-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
-    targets: ["README-zh.md", "README-jp.md", "README-fr.md"],
+    targets: ["README-zh.md", "README-ja.md", "README-fr.md"],
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n\n## Usage\n");
   await writeFile(join(cwd, "README-fr.md"), "# Project\n\n## Install\n\n## Usage\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--duplicates", "--json", "--fail-fast"]);
@@ -1226,7 +1226,7 @@ test("CLI prints JSON success report with --json", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--json"]);
   const payload = JSON.parse(result.stdout) as {
@@ -1246,7 +1246,7 @@ test("CLI prints JSON success report with --json", async () => {
   assert.equal(result.stderr, "");
   assert.equal(payload.ok, true);
   assert.equal(payload.source, "README.md");
-  assert.deepEqual(payload.targets, ["README-jp.md", "README-zh.md"]);
+  assert.deepEqual(payload.targets, ["README-ja.md", "README-zh.md"]);
   assert.equal(payload.summary.checkedTargets, 2);
   assert.equal(payload.summary.driftReports, 0);
   assertNonNegativeNumber(payload.summary.totalDurationMs);
@@ -1254,7 +1254,7 @@ test("CLI prints JSON success report with --json", async () => {
     target: report.target,
     ok: report.ok,
   })), [
-    { target: "README-jp.md", ok: true },
+    { target: "README-ja.md", ok: true },
     { target: "README-zh.md", ok: true },
   ]);
   for (const report of payload.targetReports) {
@@ -1268,7 +1268,7 @@ test("CLI prints pretty JSON success report with --json --pretty", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--json", "--pretty"]);
   const payload = JSON.parse(result.stdout) as {
@@ -1292,7 +1292,7 @@ test("CLI prints JSON summary object with --json and --summary", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--json", "--summary"]);
   const payload = JSON.parse(result.stdout) as {
@@ -1319,7 +1319,7 @@ test("CLI prints JSON drift report with --json", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--json"]);
   const payload = JSON.parse(result.stdout) as {
@@ -1340,7 +1340,7 @@ test("CLI prints JSON drift report with --json", async () => {
   assert.equal(result.stderr, "");
   assert.equal(payload.ok, false);
   assert.equal(payload.source, "README.md");
-  assert.deepEqual(payload.targets, ["README-jp.md", "README-zh.md"]);
+  assert.deepEqual(payload.targets, ["README-ja.md", "README-zh.md"]);
   assert.equal(payload.reports.length, 1);
   assert.equal(payload.reports[0].target, "README-zh.md");
   assert.deepEqual(payload.reports[0].differences, [
@@ -1356,7 +1356,7 @@ test("CLI JSON fail-fast reports only targets checked before first drift", async
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd, ["check", "--json", "--fail-fast"]);
   const payload = JSON.parse(result.stdout) as {
@@ -1370,7 +1370,7 @@ test("CLI JSON fail-fast reports only targets checked before first drift", async
   assert.equal(result.stderr, "");
   assert.equal(payload.ok, false);
   assert.equal(payload.source, "README.md");
-  assert.deepEqual(payload.targets, ["README-jp.md", "README-zh.md"]);
+  assert.deepEqual(payload.targets, ["README-ja.md", "README-zh.md"]);
   assert.deepEqual(payload.reports.map((report) => report.target), ["README-zh.md"]);
 });
 
@@ -1379,11 +1379,11 @@ test("CLI JSON fail-fast from config stops before later targets", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
     failFast: true,
-    targets: ["README-zh.md", "README-jp.md", "README-fr.md"],
+    targets: ["README-zh.md", "README-ja.md", "README-fr.md"],
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n");
   await writeFile(join(cwd, "README-fr.md"), "# Project\n\n## Install\n");
 
   const result = await runCli(cwd, ["check", "--json"]);
@@ -1393,8 +1393,8 @@ test("CLI JSON fail-fast from config stops before later targets", async () => {
   };
 
   assert.equal(result.code, 1);
-  assert.deepEqual(payload.targets, ["README-zh.md", "README-jp.md"]);
-  assert.deepEqual(payload.reports.map((report) => report.target), ["README-jp.md"]);
+  assert.deepEqual(payload.targets, ["README-zh.md", "README-ja.md"]);
+  assert.deepEqual(payload.reports.map((report) => report.target), ["README-ja.md"]);
 });
 
 test("CLI --fail-fast overrides config false", async () => {
@@ -1402,11 +1402,11 @@ test("CLI --fail-fast overrides config false", async () => {
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
     failFast: false,
-    targets: ["README-zh.md", "README-jp.md", "README-fr.md"],
+    targets: ["README-zh.md", "README-ja.md", "README-fr.md"],
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n");
   await writeFile(join(cwd, "README-fr.md"), "# Project\n\n## Install\n");
 
   const result = await runCli(cwd, ["check", "--json", "--fail-fast"]);
@@ -1416,25 +1416,25 @@ test("CLI --fail-fast overrides config false", async () => {
   };
 
   assert.equal(result.code, 1);
-  assert.deepEqual(payload.targets, ["README-zh.md", "README-jp.md"]);
-  assert.deepEqual(payload.reports.map((report) => report.target), ["README-jp.md"]);
+  assert.deepEqual(payload.targets, ["README-zh.md", "README-ja.md"]);
+  assert.deepEqual(payload.reports.map((report) => report.target), ["README-ja.md"]);
 });
 
 test("CLI text fail-fast prints only the first drift report", async () => {
   const cwd = join(tmpdir(), `readme-echo-cli-text-fail-fast-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, ".readme-echo.json"), JSON.stringify({
-    targets: ["README-zh.md", "README-jp.md", "README-fr.md"],
+    targets: ["README-zh.md", "README-ja.md", "README-fr.md"],
   }));
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
   await writeFile(join(cwd, "README-zh.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n");
   await writeFile(join(cwd, "README-fr.md"), "# Project\n\n## Install\n");
 
   const result = await runCli(cwd, ["check", "--fail-fast"]);
 
   assert.equal(result.code, 1);
-  assert.match(result.stdout, /README-jp\.md/);
+  assert.match(result.stdout, /README-ja\.md/);
   assert.doesNotMatch(result.stdout, /README-fr\.md/);
   assert.equal(result.stderr, "");
 });
@@ -1490,7 +1490,7 @@ test("CLI exits 0 when source and targets are structurally aligned", async () =>
   const cwd = join(tmpdir(), `readme-echo-cli-pass-${Date.now()}`);
   await mkdir(cwd, { recursive: true });
   await writeFile(join(cwd, "README.md"), "# Project\n\n## Install\n\n## Usage\n");
-  await writeFile(join(cwd, "README-jp.md"), "# Project\n\n## Install\n\n## Usage\n");
+  await writeFile(join(cwd, "README-ja.md"), "# Project\n\n## Install\n\n## Usage\n");
 
   const result = await runCli(cwd);
 
