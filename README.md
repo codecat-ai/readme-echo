@@ -1,5 +1,8 @@
 # Readme Echo
 
+[English](README.md) | [中文](README-zh.md) | [日本語](README-jp.md)
+
+
 Readme Echo is a small CLI that checks whether localized README files keep the same heading structure as the main English README.
 
 It is designed for maintainers who want a deterministic, CI-friendly documentation check without translation services, external AI calls, or execution of README content. This project is maintained with AI assistance, with tests and human-readable project files kept in English-first source control.
