@@ -1,5 +1,8 @@
 # Readme Echo
 
+[English](README.md) | [中文](README-zh.md) | [日本語](README-jp.md)
+
+
 Readme Echo 是一个小型 CLI，用来检查本地化 README 文件是否与主要英文 README 保持相同的标题结构。
 
 它面向希望使用确定性、适合 CI 的文档检查的维护者，不依赖翻译服务，不调用外部 AI，也不执行 README 内容。本项目在 AI 辅助下维护，测试和版本库中的项目文件以英文为主。
